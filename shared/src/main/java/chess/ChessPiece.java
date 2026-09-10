@@ -75,6 +75,6 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        return new ArrayList<>(); //this will be overwritten in the indivual piece classes
+        return new ArrayList<>(); //this will be redone
     }
 }
