@@ -15,7 +15,6 @@ public class ChessBoard {
 
 
     public ChessBoard() {
-        this.resetBoard();
     }
 
     @Override
@@ -75,10 +74,19 @@ public class ChessBoard {
                 ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.KING, ChessPiece.PieceType.BISHOP,
                 ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.ROOK
         };
+        final int whiteRow = 1;
+        final int blkRow = 8;
+        int col = 1;
+
         for (ChessPiece.PieceType piece : pieceSchedule){
-            //loop thru! addPiece for row 0 and row 8, incrementing the column as you go.
-            // while you're on the column, you can also add the pawn!
-            // You'll also have to set the other spaces to empty if a game was happening!
+            //adds the piece to board for both colors
+            this.addPiece(new ChessPosition(blkRow, col), new ChessPiece(ChessGame.TeamColor.BLACK, piece));
+            this.addPiece(new ChessPosition(whiteRow, col), new ChessPiece(ChessGame.TeamColor.WHITE, piece));
+            //add the pawns in both colors
+            this.addPiece(new ChessPosition(blkRow -1 , col), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
+            this.addPiece(new ChessPosition(whiteRow + 1, col), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+            col++;
+
         }
 
     }
