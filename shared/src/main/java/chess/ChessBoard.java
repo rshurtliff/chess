@@ -12,7 +12,7 @@ public class ChessBoard {
 
 
     public ChessBoard() {
-        
+        this.resetBoard();
     }
 
     /**
@@ -42,6 +42,17 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+       // list the pieces out in order, then loop thru and fill the board up
+        ChessPiece.PieceType[] pieceSchedule = {
+                ChessPiece.PieceType.ROOK, ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.BISHOP,
+                ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.KING, ChessPiece.PieceType.BISHOP,
+                ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.ROOK
+        };
+        for (ChessPiece.PieceType piece : pieceSchedule){
+            //loop thru! addPiece for row 0 and row 8, incrementing the column as you go.
+            // while you're on the column, you can also add the pawn!
+            // You'll also have to set the other spaces to empty if a game was happening!
+        }
+
     }
 }
