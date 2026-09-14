@@ -92,11 +92,70 @@ public class ChessPiece {
         }
 
         if (this.getPieceType() == PieceType.BISHOP) {
-            //logic here
+            //up to the right
+            int spacesNE = 1;
+            while (true){
+                if (rowPosition + spacesNE > 8 || colPosition + spacesNE > 8) break; //check OOB
+                ChessPosition newNEPosition = new ChessPosition(rowPosition + spacesNE, colPosition + spacesNE);
+                if (board.getPiece(newNEPosition) == null){
+                    possibleMoves.add(new ChessMove(myPosition,newNEPosition, null));
+                    spacesNE++;
+                } else {
+                    if (board.getPiece(newNEPosition).getTeamColor() != this.getTeamColor()){
+                        possibleMoves.add(new ChessMove(myPosition, newNEPosition, null));
+                    }
+                    break;
+                }
+            }
+            //up to the left
+            int spacesNW = 1;
+            while (true){
+                if (rowPosition + spacesNW > 8 || colPosition - spacesNW < 1) break; //check OOB
+                ChessPosition newNWPosition = new ChessPosition(rowPosition + spacesNW, colPosition - spacesNW);
+                if (board.getPiece(newNWPosition) == null){
+                    possibleMoves.add(new ChessMove(myPosition,newNWPosition, null));
+                    spacesNW++;
+                } else {
+                    if (board.getPiece(newNWPosition).getTeamColor() != this.getTeamColor()){
+                        possibleMoves.add(new ChessMove(myPosition, newNWPosition, null));
+                    }
+                    break;
+                }
+            }
+            //down to the left
+            int spacesSW = 1;
+            while (true){
+                if (rowPosition - spacesSW < 1 || colPosition - spacesSW < 1) break; //check OOB
+                ChessPosition newSWPosition = new ChessPosition(rowPosition - spacesSW, colPosition - spacesSW);
+                if (board.getPiece(newSWPosition) == null){
+                    possibleMoves.add(new ChessMove(myPosition,newSWPosition, null));
+                    spacesSW++;
+                } else {
+                    if (board.getPiece(newSWPosition).getTeamColor() != this.getTeamColor()){
+                        possibleMoves.add(new ChessMove(myPosition, newSWPosition, null));
+                    }
+                    break;
+                }
+            }
+            //down to the right
+            int spacesSE = 1;
+            while (true){
+                if (rowPosition - spacesSE < 1 || colPosition + spacesSE > 8) break; //check OOB
+                ChessPosition newSEPosition = new ChessPosition(rowPosition - spacesSE, colPosition + spacesSE);
+                if (board.getPiece(newSEPosition) == null){
+                    possibleMoves.add(new ChessMove(myPosition,newSEPosition, null));
+                    spacesSE++;
+                } else {
+                    if (board.getPiece(newSEPosition).getTeamColor() != this.getTeamColor()){
+                        possibleMoves.add(new ChessMove(myPosition, newSEPosition, null));
+                    }
+                    break;
+                }
+            }
         }
 
         if (this.getPieceType() == PieceType.KNIGHT) {
-            //logic here
+            //
         }
 
         if (this.getPieceType() == PieceType.ROOK) {
