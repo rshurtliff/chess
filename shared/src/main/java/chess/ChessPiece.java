@@ -96,7 +96,7 @@ public class ChessPiece {
         }
 
         if (this.getPieceType() == PieceType.KNIGHT) {
-            //
+            return knightMoves(board,myPosition);
         }
 
         if (this.getPieceType() == PieceType.ROOK) {
@@ -109,6 +109,24 @@ public class ChessPiece {
 
         return possibleMoves;
     }
+
+    public Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition){
+        int[][] moveCoordinates = {{2,1}, {1,2}, {-1,2},{-2,1},{-2,-1},{-1,-2},{1,-2},{2,-1}};
+        Collection<ChessMove> possibleMoves = new ArrayList<>();
+        int rowPosition = myPosition.getRow();
+        int colPosition = myPosition.getColumn();
+        for (int[] move : moveCoordinates){
+            int newRow = move[0] + rowPosition;
+            int newCol = move[1] + colPosition;
+            if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) continue; //OOB Check
+            ChessPosition newPosition = new ChessPosition(newRow, newCol);
+            if (board.getPiece(newPosition) == null || board.getPiece(newPosition).getTeamColor() != this.getTeamColor()){
+                possibleMoves.add(new ChessMove(myPosition,newPosition,null));
+            }
+        }
+        return possibleMoves;
+    }
+
     public Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition){
         ArrayList<ChessMove> possibleMoves = new ArrayList<>();
         int rowPosition = myPosition.getRow();
