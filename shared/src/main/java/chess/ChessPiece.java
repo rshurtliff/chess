@@ -82,7 +82,8 @@ public class ChessPiece {
         ArrayList<ChessMove> possibleMoves = new ArrayList<>();
 
         if (this.getPieceType() == PieceType.KING) {
-            //logic here
+            int[][] kingCoordinates = {{1,0},{0,1},{0,-1},{-1,0},{1,1},{1,-1},{-1,1},{-1,-1}};
+            return setMoves(board, myPosition, kingCoordinates);
         }
 
         if (this.getPieceType() == PieceType.QUEEN) {
@@ -96,7 +97,8 @@ public class ChessPiece {
         }
 
         if (this.getPieceType() == PieceType.KNIGHT) {
-            return knightMoves(board,myPosition);
+            int[][] knightCoordinates = {{2,1}, {1,2}, {-1,2},{-2,1},{-2,-1},{-1,-2},{1,-2},{2,-1}};
+            return setMoves(board,myPosition, knightCoordinates);
         }
 
         if (this.getPieceType() == PieceType.ROOK) {
@@ -110,8 +112,7 @@ public class ChessPiece {
         return possibleMoves;
     }
 
-    public Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition){
-        int[][] moveCoordinates = {{2,1}, {1,2}, {-1,2},{-2,1},{-2,-1},{-1,-2},{1,-2},{2,-1}};
+    public Collection<ChessMove> setMoves(ChessBoard board, ChessPosition myPosition,int[][] moveCoordinates){
         Collection<ChessMove> possibleMoves = new ArrayList<>();
         int rowPosition = myPosition.getRow();
         int colPosition = myPosition.getColumn();
