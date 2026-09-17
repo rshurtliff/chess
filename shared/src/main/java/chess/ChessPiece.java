@@ -106,9 +106,61 @@ public class ChessPiece {
         }
 
         if (this.getPieceType() == PieceType.PAWN) {
-            //logic here
+            return pawnMoves(board, myPosition);
         }
 
+        return possibleMoves;
+    }
+
+    public Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition){
+        int rowPosition = myPosition.getRow();
+        int colPosition = myPosition.getColumn();
+        Collection<ChessMove> possibleMoves = new ArrayList<>();
+        int homeRow;
+        int movement;
+        int promotionRow;
+        PieceType[] promotionPieces = {PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT};
+        int[] attackCol = {-1,1};
+         if (board.getPiece(myPosition).getTeamColor() == ChessGame.TeamColor.BLACK){
+             homeRow = 7;
+             movement = -1;
+             promotionRow = 1;
+         } else {
+             homeRow = 2;
+             movement = 1;
+             promotionRow = 8;
+         }
+        if (rowPosition == homeRow){ //home row cases (2 spaces only)
+            if (board.getPiece(new ChessPosition(rowPosition + movement, colPosition)) == null &&
+                 board.getPiece(new ChessPosition(rowPosition + movement * 2, colPosition)) == null){
+                    possibleMoves.add(new ChessMove(myPosition,new ChessPosition(rowPosition + movement * 2, colPosition),null));
+            }
+        }
+        // move forward
+        if (board.getPiece(new ChessPosition(rowPosition + movement, colPosition)) == null){
+            if(rowPosition != promotionRow - movement){ //if it won't lead to promotion
+                possibleMoves.add(new ChessMove(myPosition, new ChessPosition(rowPosition + movement, colPosition), null));
+            } else {
+                for (PieceType piece : promotionPieces){
+                    possibleMoves.add(new ChessMove(myPosition, new ChessPosition(rowPosition + movement, colPosition), piece));
+                }
+            }
+        }
+        //capture piece if diagonal
+        for (int direction : attackCol){ //check both ways
+            if (colPosition + direction >= 1 && colPosition + direction <= 8){ //make sure not OOB
+                ChessPosition attackPosition = new ChessPosition(rowPosition + movement, colPosition + direction);
+                if (board.getPiece(attackPosition) != null && board.getPiece(attackPosition).getTeamColor() != this.getTeamColor()){ //see if it can capture
+                    if (rowPosition != promotionRow - movement){ // if not the last row
+                        possibleMoves.add(new ChessMove(myPosition, attackPosition,null));
+                    } else {
+                        for (PieceType piece : promotionPieces){
+                            possibleMoves.add(new ChessMove(myPosition, attackPosition,piece));
+                        }
+                    }
+                }
+            }
+        }
         return possibleMoves;
     }
 
