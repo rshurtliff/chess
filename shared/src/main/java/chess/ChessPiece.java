@@ -80,49 +80,53 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ArrayList<ChessMove> possibleMoves = new ArrayList<>();
+
         if (this.getPieceType() == PieceType.KING) {
             int[][] kingCoordinates = {{1,0},{0,1},{0,-1},{-1,0},{1,1},{1,-1},{-1,1},{-1,-1}};
-            return setMoves(board, myPosition, kingCoordinates);
+            for (int[] move : kingCoordinates){
+                int row = move[0]; int col = move[1];
+                calculateMoves(board,myPosition,row,col,possibleMoves,false);
+            }
+
         }
 
         if (this.getPieceType() == PieceType.QUEEN) {
             int[][] queenDirections = {{1,1},{-1,-1},{1,-1},{-1,1},{1,0},{-1,0},{0,-1},{0,1}};
             for (int[] move : queenDirections){
                 int row = move[0]; int col = move[1];
-                movesWithDistance(board,myPosition, row,col,possibleMoves);
+                calculateMoves(board,myPosition, row,col,possibleMoves,true);
             }
-            return possibleMoves;
         }
 
         if (this.getPieceType() == PieceType.BISHOP) {
             int[][] bishopDirections = {{1,1},{-1,-1},{1,-1},{-1,1}};
             for (int[] move : bishopDirections){
                 int row = move[0]; int col = move[1];
-                movesWithDistance(board,myPosition, row,col,possibleMoves);
+                calculateMoves(board,myPosition, row,col,possibleMoves,true);
             }
-            return possibleMoves;
         }
 
         if (this.getPieceType() == PieceType.KNIGHT) {
             int[][] knightCoordinates = {{2,1}, {1,2}, {-1,2},{-2,1},{-2,-1},{-1,-2},{1,-2},{2,-1}};
-            return setMoves(board,myPosition, knightCoordinates);
+            for (int[] move : knightCoordinates){
+                int row = move[0]; int col = move[1];
+                calculateMoves(board,myPosition,row,col,possibleMoves,false);
+            }
         }
 
         if (this.getPieceType() == PieceType.ROOK) {
             int[][] rookDirections = {{1,0},{-1,0},{0,-1},{0,1}};
             for (int[] move : rookDirections){
                 int row = move[0]; int col = move[1];
-                movesWithDistance(board,myPosition, row,col,possibleMoves);
+                calculateMoves(board,myPosition, row,col,possibleMoves,true);
             }
-            return possibleMoves;
-
         }
 
         if (this.getPieceType() == PieceType.PAWN) {
             return pawnMoves(board, myPosition);
         }
 
-        return null;
+        return possibleMoves;
     }
 
     public Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition){
@@ -177,23 +181,8 @@ public class ChessPiece {
         return possibleMoves;
     }
 
-    public Collection<ChessMove> setMoves(ChessBoard board, ChessPosition myPosition,int[][] moveCoordinates){
-        Collection<ChessMove> possibleMoves = new ArrayList<>();
-        int rowPosition = myPosition.getRow();
-        int colPosition = myPosition.getColumn();
-        for (int[] move : moveCoordinates){
-            int newRow = move[0] + rowPosition;
-            int newCol = move[1] + colPosition;
-            if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) continue; //OOB Check
-            ChessPosition newPosition = new ChessPosition(newRow, newCol);
-            if (board.getPiece(newPosition) == null || board.getPiece(newPosition).getTeamColor() != this.getTeamColor()){
-                possibleMoves.add(new ChessMove(myPosition,newPosition,null));
-            }
-        }
-        return possibleMoves;
-    }
-
-    public Collection <ChessMove> movesWithDistance(ChessBoard board, ChessPosition myPosition, int rowMove, int colMove, ArrayList<ChessMove> possibleMoves){
+    public void calculateMoves(ChessBoard board, ChessPosition myPosition, int rowMove, int colMove,
+                               ArrayList<ChessMove> possibleMoves, boolean allowDistance ){
         int row = myPosition.getRow() + rowMove;
         int col = myPosition.getColumn() + colMove;
         while (row <= 8 && row >= 1 && col <= 8 && col >= 1){ // while the move is inbounds:
@@ -208,7 +197,7 @@ public class ChessPiece {
                 }
                 break;
             }
+            if (!allowDistance){break;}
         }
-        return possibleMoves;
     }
 }
