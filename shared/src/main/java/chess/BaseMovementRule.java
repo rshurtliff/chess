@@ -20,7 +20,7 @@ public abstract class BaseMovementRule implements MovementRule{
                 }
                 break;
             }
-            if (!allowDistance){break;}
+            if (!allowDistance){break;} //just do this once if it's not a distance move
         }
     }
     public abstract Collection<ChessMove> pieceMoves (ChessBoard board, ChessPosition pos);
