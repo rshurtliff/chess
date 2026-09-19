@@ -8,11 +8,7 @@ public class RookRule extends BaseMovementRule{
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition pos) {
         ArrayList<ChessMove> possibleMoves = new ArrayList<>();
         int[][] rookDirections = {{1,0},{-1,0},{0,-1},{0,1}};
-        for (int[] move : rookDirections) {
-            int row = move[0];
-            int col = move[1];
-            calculateMoves(board, pos, row, col, possibleMoves, true);
-        }
+        calculateMoves(board, pos, rookDirections, possibleMoves, true);
         return possibleMoves;
     }
 }

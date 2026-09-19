@@ -8,11 +8,7 @@ public class QueenRule extends BaseMovementRule{
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition pos) {
         ArrayList<ChessMove> possibleMoves = new ArrayList<>();
         int[][] queenDirections = {{1,1},{-1,-1},{1,-1},{-1,1},{1,0},{-1,0},{0,-1},{0,1}};
-        for (int[] move : queenDirections) {
-            int row = move[0];
-            int col = move[1];
-            calculateMoves(board, pos, row, col, possibleMoves, true);
-        }
+        calculateMoves(board, pos, queenDirections, possibleMoves, true);
         return possibleMoves;
     }
 }

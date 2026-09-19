@@ -8,11 +8,7 @@ public class BishopRule extends BaseMovementRule {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition pos) {
         ArrayList<ChessMove> possibleMoves = new ArrayList<>();
         int[][] bishopDirections = {{1,1},{-1,-1},{1,-1},{-1,1}};
-        for (int[] move : bishopDirections) {
-            int row = move[0];
-            int col = move[1];
-            calculateMoves(board, pos, row, col, possibleMoves, true);
-        }
+        calculateMoves(board, pos, bishopDirections, possibleMoves, true);
         return possibleMoves;
     }
 }
