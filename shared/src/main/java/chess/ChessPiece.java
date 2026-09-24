@@ -41,8 +41,8 @@ public class ChessPiece {
                 PieceType.BISHOP, "b",
                 PieceType.PAWN,"p"
         );
-        if (pieceColor == ChessGame.TeamColor.BLACK) return symbolsMap.get(type);
-        else return symbolsMap.get(type).toUpperCase();
+        if (pieceColor == ChessGame.TeamColor.BLACK) {return symbolsMap.get(type);}
+        else {return symbolsMap.get(type).toUpperCase();}
     }
 
     /**
