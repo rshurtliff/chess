@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -34,7 +36,7 @@ public class ChessBoard {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (ChessPiece[] row : board){
+        for (ChessPiece[] row : board) {
             sb.append(Arrays.toString(row)).append("\n");
         }
         return "ChessBoard: \n" +
@@ -48,7 +50,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        board[position.getRow() -1 ][position.getColumn() -1 ] = piece;
+        board[position.getRow() - 1][position.getColumn() - 1] = piece;
     }
 
     /**
@@ -59,7 +61,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return board[position.getRow() -1 ][position.getColumn() -1 ];
+        return board[position.getRow() - 1][position.getColumn() - 1];
 
     }
 
@@ -68,26 +70,54 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-       // list the pieces out in order, then loop thru and fill the board up
+        // list the pieces out in order, then loop thru and fill the board up
+        board = new ChessPiece[8][8];
         ChessPiece.PieceType[] pieceSchedule = {
                 ChessPiece.PieceType.ROOK, ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.BISHOP,
                 ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.KING, ChessPiece.PieceType.BISHOP,
                 ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.ROOK
         };
         final int whiteRow = 1;
-        final int blkRow = 8;
-        int col = 1;
+        final int blackRow = 8;
 
-        for (ChessPiece.PieceType piece : pieceSchedule){
+        for (int col = 1; col <= 8; col++) {
             //adds the piece to board for both colors
-            this.addPiece(new ChessPosition(blkRow, col), new ChessPiece(ChessGame.TeamColor.BLACK, piece));
-            this.addPiece(new ChessPosition(whiteRow, col), new ChessPiece(ChessGame.TeamColor.WHITE, piece));
+            ChessPiece.PieceType piece = pieceSchedule[col - 1];
+            addPiece(new ChessPosition(blackRow, col), new ChessPiece(ChessGame.TeamColor.BLACK, piece));
+            addPiece(new ChessPosition(whiteRow, col), new ChessPiece(ChessGame.TeamColor.WHITE, piece));
             //add the pawns in both colors
-            this.addPiece(new ChessPosition(blkRow -1 , col), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
-            this.addPiece(new ChessPosition(whiteRow + 1, col), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
-            col++;
-
+            addPiece(new ChessPosition(blackRow - 1, col), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
+            addPiece(new ChessPosition(whiteRow + 1, col), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
         }
 
     }
+
+    /**
+     * returns the position of the king, given a certain color
+     */
+    public ChessPosition findKing(ChessGame.TeamColor teamColor) {
+        Collection<ChessPosition> filledPositions = findAllPieces(teamColor);
+        for (ChessPosition pos : filledPositions){
+            if (getPiece(pos).getPieceType() == ChessPiece.PieceType.KING){return pos;}
+        }
+        return null;
+    }
+    /**
+     * returns the positions of all pieces of a certain color
+     */
+    public Collection<ChessPosition> findAllPieces(ChessGame.TeamColor teamColor) {
+        Collection<ChessPosition> filledPositions = new ArrayList<>();
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition pos = new ChessPosition(row, col);
+                ChessPiece piece = getPiece(pos);
+                if (piece != null && piece.getTeamColor() == teamColor){
+                    filledPositions.add(pos);
+                }
+            }
+        }
+        return filledPositions;
+    }
+
 }
+

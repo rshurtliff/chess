@@ -9,16 +9,19 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
+    private TeamColor turn;
+    private ChessBoard gameBoard = new ChessBoard();
 
     public ChessGame() {
-
+        turn = TeamColor.WHITE;
+        gameBoard.resetBoard();
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return this.turn;
     }
 
     /**
@@ -27,7 +30,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        turn = team;
     }
 
     /**
@@ -56,7 +59,8 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        // check if it's a possible move
+        // check that it wouldn't be in check
     }
 
     /**
@@ -66,7 +70,23 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        //if any piece can move to where the king is currently.
+        // need to find the king's position
+        ChessPosition kingPos = gameBoard.findKing(teamColor);
+        if (kingPos == null){return false;}
+        TeamColor oppColor = teamColor == TeamColor.BLACK ? TeamColor.WHITE : TeamColor.BLACK;
+        Collection<ChessPosition> opponentPositions = gameBoard.findAllPieces(oppColor);
+        // loop thru each opponent's piece. if possibleMoves includes kingPos, return true. if you loop thru and finish, return false. king pos can be false if there's no king
+        for (ChessPosition oppPos : opponentPositions){
+            ChessPiece oppPiece = gameBoard.getPiece(oppPos);
+            Collection<ChessMove> possibleMoves = oppPiece.pieceMoves(gameBoard,oppPos);
+            for (ChessMove move : possibleMoves){
+                if (move.getEndPosition().equals(kingPos)){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -96,7 +116,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        gameBoard = board;
     }
 
     /**
@@ -105,6 +125,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return gameBoard;
     }
 }
