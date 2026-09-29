@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -49,15 +50,18 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+        Collection<ChessMove> validMoves = new ArrayList<>();
+
         ChessPiece piece = gameBoard.getPiece(startPosition);
         Collection<ChessMove> possibleMoves = piece.pieceMoves(gameBoard,startPosition);
         for(ChessMove move: possibleMoves){
-            // make the move on a temporary board. see if it puts yourself in check. if it does, throw it away
-            //implement makeMove first, because
+            ChessBoard testBoard = new ChessBoard(gameBoard);
+            testBoard.movePieceHelper(move);
+            if(!isInCheck(piece.getTeamColor(), testBoard)){
+                validMoves.add(move);
+            }
         }
-        // given a start position, call possibleMoves. loop thru, making the move on a copy board. if it puts
-        // your own king in chess, then it's not valid, and remove it from the list.
-        return null;
+        return validMoves;
     }
 
     /**
@@ -68,7 +72,10 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         // check if it's a possible move
-        // check that it wouldn't be in check
+        if(!validMoves(move.getStartPosition()).contains(move)){
+            throw new InvalidMoveException();
+        }
+        gameBoard.movePieceHelper(move);
     }
 
     /**
@@ -78,16 +85,16 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        //if any piece can move to where the king is currently.
-        // need to find the king's position
-        ChessPosition kingPos = gameBoard.findKing(teamColor);
+        return isInCheck(teamColor, gameBoard);
+    }
+    private boolean isInCheck(TeamColor teamColor, ChessBoard board){
+        ChessPosition kingPos = board.findKing(teamColor);
         if (kingPos == null){return false;}
         TeamColor oppColor = teamColor == TeamColor.BLACK ? TeamColor.WHITE : TeamColor.BLACK;
-        Collection<ChessPosition> opponentPositions = gameBoard.findAllPieces(oppColor);
-        // loop thru each opponent's piece. if possibleMoves includes kingPos, return true. if you loop thru and finish, return false. king pos can be false if there's no king
+        Collection<ChessPosition> opponentPositions = board.findAllPieces(oppColor);
         for (ChessPosition oppPos : opponentPositions){
-            ChessPiece oppPiece = gameBoard.getPiece(oppPos);
-            Collection<ChessMove> possibleMoves = oppPiece.pieceMoves(gameBoard,oppPos);
+            ChessPiece oppPiece = board.getPiece(oppPos);
+            Collection<ChessMove> possibleMoves = oppPiece.pieceMoves(board,oppPos);
             for (ChessMove move : possibleMoves){
                 if (move.getEndPosition().equals(kingPos)){
                     return true;
@@ -96,7 +103,6 @@ public class ChessGame {
         }
         return false;
     }
-
     /**
      * Determines if the given team is in checkmate
      *

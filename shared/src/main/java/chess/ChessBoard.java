@@ -76,9 +76,15 @@ public class ChessBoard {
      is valid or throw any exceptions
      */
     public void movePieceHelper(ChessMove move){
-        ChessPiece type = getPiece(move.getStartPosition());
+        ChessPiece newPiece;
+        if (move.getPromotionPiece() == null){
+            newPiece = getPiece(move.getStartPosition());
+        } else{
+            ChessGame.TeamColor color = getPiece(move.getStartPosition()).getTeamColor();
+            newPiece = new ChessPiece(color, move.getPromotionPiece());
+        }
         addPiece(move.getStartPosition(),null);
-        addPiece(move.getEndPosition(),type);
+        addPiece(move.getEndPosition(),newPiece);
     }
     /**
      * Sets the board to the default starting board
