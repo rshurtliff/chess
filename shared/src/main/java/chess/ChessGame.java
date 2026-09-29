@@ -71,11 +71,22 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        // check if it's a possible move
-        if(!validMoves(move.getStartPosition()).contains(move)){
+        //gotta make sure the move doesnt try to be from an empty square, or you'll get a null ptr exception
+        //make sure it's your turn too
+        //this should also change the turn to be the opposite
+        ChessPiece piece = gameBoard.getPiece(move.getStartPosition());
+        if(piece == null){throw new InvalidMoveException();}
+        TeamColor color = piece.getTeamColor();
+        if(!validMoves(move.getStartPosition()).contains(move) || getTeamTurn() != color){
             throw new InvalidMoveException();
         }
         gameBoard.movePieceHelper(move);
+        if(color == TeamColor.WHITE){
+            setTeamTurn(TeamColor.BLACK);
+        } else {
+            setTeamTurn(TeamColor.WHITE);
+        }
+
     }
 
     /**
