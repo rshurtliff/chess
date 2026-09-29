@@ -49,7 +49,15 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = gameBoard.getPiece(startPosition);
+        Collection<ChessMove> possibleMoves = piece.pieceMoves(gameBoard,startPosition);
+        for(ChessMove move: possibleMoves){
+            // make the move on a temporary board. see if it puts yourself in check. if it does, throw it away
+            //implement makeMove first, because
+        }
+        // given a start position, call possibleMoves. loop thru, making the move on a copy board. if it puts
+        // your own king in chess, then it's not valid, and remove it from the list.
+        return null;
     }
 
     /**

@@ -13,10 +13,16 @@ import java.util.Objects;
  */
 public class ChessBoard {
 
-    private ChessPiece[][] board = new ChessPiece[8][8]; //9 by 9 if you want to be clever? Then you don't have to subtract 1
+    private ChessPiece[][] board = new ChessPiece[8][8];
 
 
     public ChessBoard() {
+    }
+
+    public ChessBoard(ChessBoard other){
+        for (int i = 0; i < board.length; i++){
+            this.board[i] = other.board[i].clone();
+        }
     }
 
     @Override
@@ -36,8 +42,9 @@ public class ChessBoard {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (ChessPiece[] row : board) {
-            sb.append(Arrays.toString(row)).append("\n");
+        for (ChessPiece[] row : board) { //loop backwards instead
+//            sb.append(Arrays.toString(row)).append("\n");
+            sb.insert(0,Arrays.toString(row) + "\n");
         }
         return "ChessBoard: \n" +
                 sb.toString();
@@ -64,7 +71,15 @@ public class ChessBoard {
         return board[position.getRow() - 1][position.getColumn() - 1];
 
     }
-
+    /**
+        this is a helper method for valid moves. Doesn't check whether the move
+     is valid or throw any exceptions
+     */
+    public void movePieceHelper(ChessMove move){
+        ChessPiece type = getPiece(move.getStartPosition());
+        addPiece(move.getStartPosition(),null);
+        addPiece(move.getEndPosition(),type);
+    }
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
@@ -118,6 +133,10 @@ public class ChessBoard {
         }
         return filledPositions;
     }
+    /**
+     * Moves a piece by removing it and adding a piece
+     */
+
 
 }
 
