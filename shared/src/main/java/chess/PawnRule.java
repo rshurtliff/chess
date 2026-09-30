@@ -6,14 +6,14 @@ import java.util.Collection;
 public class PawnRule extends BaseMovementRule {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition pos) {
+        Collection<ChessMove> possibleMoves = new ArrayList<>();
+
         int rowPosition = pos.getRow();
         int colPosition = pos.getColumn();
-        Collection<ChessMove> possibleMoves = new ArrayList<>();
         int homeRow;
         int movement;
         int promotionRow;
-        ChessPiece.PieceType[] promotionPieces = {ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.ROOK, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.KNIGHT};
-        int[] attackCol = {-1, 1};
+
         if (board.getPiece(pos).getTeamColor() == ChessGame.TeamColor.BLACK) {
             homeRow = 7;
             movement = -1;
@@ -23,37 +23,43 @@ public class PawnRule extends BaseMovementRule {
             movement = 1;
             promotionRow = 8;
         }
+        boolean promotion = (promotionRow == rowPosition + movement);
+
+        //initial move
         if (rowPosition == homeRow) { //home row cases (2 spaces only)
             if (board.getPiece(new ChessPosition(rowPosition + movement, colPosition)) == null &&
                     board.getPiece(new ChessPosition(rowPosition + movement * 2, colPosition)) == null) {
                 possibleMoves.add(new ChessMove(pos, new ChessPosition(rowPosition + movement * 2, colPosition), null));
             }
         }
-        // move forward
+        // move forward (don't have to check forward boundary because a pawn will never be in rows 1 or 8.
         if (board.getPiece(new ChessPosition(rowPosition + movement, colPosition)) == null) {
-            if (rowPosition != promotionRow - movement) { //if it won't lead to promotion
-                possibleMoves.add(new ChessMove(pos, new ChessPosition(rowPosition + movement, colPosition), null));
-            } else {
-                for (ChessPiece.PieceType piece : promotionPieces) {
-                    possibleMoves.add(new ChessMove(pos, new ChessPosition(rowPosition + movement, colPosition), piece));
-                }
-            }
+            ChessPosition newPos = new ChessPosition(rowPosition + movement, colPosition);
+            addPawnMoves(promotion, possibleMoves, pos, newPos);
         }
-        //capture piece if diagonal
-        for (int direction : attackCol) { //check both ways
-            if (colPosition + direction >= 1 && colPosition + direction <= 8) { //make sure not OOB
-                ChessPosition attackPosition = new ChessPosition(rowPosition + movement, colPosition + direction);
-                if (board.getPiece(attackPosition) != null && board.getPiece(attackPosition).getTeamColor() != board.getPiece(pos).getTeamColor()) { //see if it can capture
-                    if (rowPosition != promotionRow - movement) { // if not the last row
-                        possibleMoves.add(new ChessMove(pos, attackPosition, null));
-                    } else {
-                        for (ChessPiece.PieceType piece : promotionPieces) {
-                            possibleMoves.add(new ChessMove(pos, attackPosition, piece));
-                        }
-                    }
+        //capture
+        int[] attackCol = {-1, 1};
+        for (int dir : attackCol) {
+            int newCol = colPosition + dir;
+            if (newCol >= 1 && newCol <= 8) {
+                ChessPosition newPos = new ChessPosition(rowPosition + movement, newCol);
+                if (board.getPiece(newPos) != null && board.getPiece(newPos).getTeamColor() != board.getPiece(pos).getTeamColor()) {
+                    addPawnMoves(promotion, possibleMoves, pos, newPos);
                 }
             }
         }
         return possibleMoves;
+    }
+
+    private void addPawnMoves(boolean promotion, Collection<ChessMove> possibleMoves, ChessPosition pos, ChessPosition newPos) {
+        ChessPiece.PieceType[] promotionPieces = {ChessPiece.PieceType.QUEEN,
+                ChessPiece.PieceType.ROOK, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.KNIGHT};
+        if (!promotion) {
+            possibleMoves.add(new ChessMove(pos, newPos, null));
+        } else {
+            for (ChessPiece.PieceType piece : promotionPieces) {
+                possibleMoves.add(new ChessMove(pos, newPos, piece));
+            }
+        }
     }
 }
