@@ -1,61 +1,64 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccess;
+import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
-import org.jetbrains.annotations.NotNull;
+import service.AdminService;
 
 import java.util.Map;
 
 public class Server {
 
     private final Javalin javalin;
+    private final AdminService adminService;
 
     public Server() {
+        DataAccess dataAccess = new MemoryDataAccess();
+        adminService = new AdminService(dataAccess);
 
-
-
-
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        javalin.delete("/db", Server::clearDb);
-        javalin.post("/user", Server::registerNewUser);
-        javalin.post("/session",Server::login);
-        javalin.delete("/session",Server::logout);
-        javalin.get("/game",Server::listGames);
-        javalin.post("/game",Server::createGame);
-        javalin.put("/game",Server::joinGame);
         // Register your endpoints and exception handlers here.
-
+        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        javalin.delete("/db", this::clearDb);
+        javalin.post("/user", this::registerNewUser);
+        javalin.post("/session",this::login);
+        javalin.delete("/session",this::logout);
+        javalin.get("/game",this::listGames);
+        javalin.post("/game",this::createGame);
+        javalin.put("/game",this::joinGame);
     }
 
 
 
 
-    private static void clearDb(Context ctx) {
-
+    private void clearDb(Context ctx) {
+        adminService.clear();
         System.out.println("Testing Clear DB Endpoint");
+        ctx.status(200);
+
     }
 
-    private static void registerNewUser(Context ctx) {
+    private void registerNewUser(Context ctx) {
         //register the new user
     }
 
-    private static void login( Context ctx) {
+    private void login( Context ctx) {
         // login handler
     }
 
-    private static void logout(Context ctx) {
+    private void logout(Context ctx) {
     }
 
-    private static void listGames(Context ctx) {
+    private void listGames(Context ctx) {
         System.out.println("Testing List Game Endpoint");
 
     }
 
-    private static void createGame(Context ctx) {
+    private void createGame(Context ctx) {
     }
 
-    private static void joinGame(Context ctx) {
+    private void joinGame(Context ctx) {
     }
 
 
