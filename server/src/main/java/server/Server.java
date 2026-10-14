@@ -5,7 +5,7 @@ import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
-import service.AdminService;
+import service.*;
 
 import java.util.Map;
 
@@ -13,10 +13,13 @@ public class Server {
 
     private final Javalin javalin;
     private final AdminService adminService;
+    private final UserService userService;
+
 
     public Server() {
         DataAccess dataAccess = new MemoryDataAccess();
         adminService = new AdminService(dataAccess);
+        userService = new UserService(dataAccess);
 
         // Register your endpoints and exception handlers here.
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
@@ -41,6 +44,26 @@ public class Server {
 
     private void registerNewUser(Context ctx) {
         //register the new user
+        // body is a JSON string. Create a RegisterRequest object (make the class first, maybe a record actually), and then proceed down the sequence diagram
+        var serializer = new Gson();
+        var registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
+
+        System.out.println(registerRequest);
+
+        try {
+           RegisterResult registerResult = userService.register(registerRequest);
+           ctx.status(200);
+           ctx.result(serializer.toJson(registerResult));
+
+            System.out.println(registerResult);
+
+        } catch (AlreadyTakenException e){
+            ctx.status(403);
+            ctx.result(serializer.toJson(Map.of("message","Error: username already taken")));
+            System.out.println(e.getMessage());
+        }
+
+
     }
 
     private void login( Context ctx) {

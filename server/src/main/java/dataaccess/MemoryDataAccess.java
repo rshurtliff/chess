@@ -21,13 +21,18 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void register(UserData userData, AuthData authData){
-        users.put(userData.getUsername(), userData);
-//        auths.put(authData.getAuth(), authData);
+        users.put(userData.username(), userData);
+        auths.put(authData.authToken(), authData);
     }
 
+    /**Finds the user
+     by username @returns a UserData object*/
     @Override
     public UserData getUser(String username){
         return users.get(username);
     }
 
-}
+
+    }
+
+

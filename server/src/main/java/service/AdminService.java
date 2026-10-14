@@ -1,7 +1,6 @@
 package service;
 
 import dataaccess.DataAccess;
-import dataaccess.MemoryDataAccess;
 
 public class AdminService {
     private DataAccess dataAccess;
