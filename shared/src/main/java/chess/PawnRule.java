@@ -7,21 +7,13 @@ public class PawnRule extends BaseMovementRule {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition pos) {
         Collection<ChessMove> possibleMoves = new ArrayList<>();
-
-        int rowPosition = pos.getRow();
-        int colPosition = pos.getColumn();
-        int homeRow;
-        int movement;
-        int promotionRow;
+        int rowPosition = pos.getRow(); int colPosition = pos.getColumn();
+        int homeRow; int movement; int promotionRow;
 
         if (board.getPiece(pos).getTeamColor() == ChessGame.TeamColor.BLACK) {
-            homeRow = 7;
-            movement = -1;
-            promotionRow = 1;
+            homeRow = 7; movement = -1; promotionRow = 1;
         } else {
-            homeRow = 2;
-            movement = 1;
-            promotionRow = 8;
+            homeRow = 2; movement = 1; promotionRow = 8;
         }
         boolean promotion = (promotionRow == rowPosition + movement);
 
@@ -32,7 +24,7 @@ public class PawnRule extends BaseMovementRule {
                 possibleMoves.add(new ChessMove(pos, new ChessPosition(rowPosition + movement * 2, colPosition), null));
             }
         }
-        // move forward (don't have to check forward boundary because a pawn will never be in rows 1 or 8.
+        // move forward (don't have to check forward boundary because a pawn will never be in rows 1 or 8).
         if (board.getPiece(new ChessPosition(rowPosition + movement, colPosition)) == null) {
             ChessPosition newPos = new ChessPosition(rowPosition + movement, colPosition);
             addPawnMoves(promotion, possibleMoves, pos, newPos);
