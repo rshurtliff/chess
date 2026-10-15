@@ -20,9 +20,9 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public void register(UserData userData, AuthData authData){
-        users.put(userData.username(), userData);
-        auths.put(authData.authToken(), authData);
+    public void register(UserData user, AuthData auth){
+        users.put(user.username(), user);
+        auths.put(auth.authToken(), auth);
     }
 
     /**Finds the user
@@ -32,7 +32,10 @@ public class MemoryDataAccess implements DataAccess {
         return users.get(username);
     }
 
-
+    @Override
+    public void createAuth(AuthData auth){
+        auths.put(auth.authToken(), auth);
+    }
     }
 
 

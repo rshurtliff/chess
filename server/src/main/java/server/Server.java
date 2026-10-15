@@ -10,7 +10,7 @@ import service.*;
 import java.util.Map;
 
 public class Server {
-
+    private static final Gson serializer = new Gson();
     private final Javalin javalin;
     private final AdminService adminService;
     private final UserService userService;
@@ -37,37 +37,41 @@ public class Server {
 
     private void clearDb(Context ctx) {
         adminService.clear();
-        System.out.println("Testing Clear DB Endpoint");
         ctx.status(200);
 
     }
 
     private void registerNewUser(Context ctx) {
-        //register the new user
-        // body is a JSON string. Create a RegisterRequest object (make the class first, maybe a record actually), and then proceed down the sequence diagram
-        var serializer = new Gson();
-        var registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
-
-        System.out.println(registerRequest);
-
+        RegisterRequest registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
+        if (isBadRegisterRequest(registerRequest)){
+            ctx.status(400);
+            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            return;
+        }
         try {
            RegisterResult registerResult = userService.register(registerRequest);
            ctx.status(200);
            ctx.result(serializer.toJson(registerResult));
-
-            System.out.println(registerResult);
-
         } catch (AlreadyTakenException e){
             ctx.status(403);
             ctx.result(serializer.toJson(Map.of("message","Error: username already taken")));
-            System.out.println(e.getMessage());
         }
-
-
     }
 
+    private boolean isBadRegisterRequest(RegisterRequest registerRequest){
+        return (registerRequest.username() == null || registerRequest.password() == null || registerRequest.email() == null);
+    }
     private void login( Context ctx) {
-        // login handler
+        LoginRequest loginRequest = serializer.fromJson(ctx.body(), LoginRequest.class);
+        try {
+            LoginResult loginResult = userService.login(loginRequest);
+            ctx.status(200);
+            ctx.result(serializer.toJson(loginResult));
+
+        } catch (NotAuthorizedException e){
+            ctx.status(401);
+            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+        }
     }
 
     private void logout(Context ctx) {

@@ -28,4 +28,20 @@ public class UserService {
     public static String generateToken(){
         return UUID.randomUUID().toString();
     }
+
+    public LoginResult login(LoginRequest loginRequest) throws NotAuthorizedException{
+        UserData user = dataAccess.getUser(loginRequest.username());
+        if(isValidPassword(loginRequest, user)){
+            AuthData auth = new AuthData(generateToken(), loginRequest.username());
+            dataAccess.createAuth(auth);
+            return new LoginResult(loginRequest.username(), auth.authToken());
+        } else {
+            throw new NotAuthorizedException("Error: unauthorized");
+        }
+
+    }
+
+    private boolean isValidPassword(LoginRequest loginRequest, UserData user){
+        return (user != null && loginRequest.password().equals(user.password()));
+    }
 }
