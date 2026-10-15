@@ -44,4 +44,12 @@ public class UserService {
     private boolean isValidPassword(LoginRequest loginRequest, UserData user){
         return (user != null && loginRequest.password().equals(user.password()));
     }
+
+    public void logout(LogoutRequest logoutRequest) throws NotAuthorizedException {
+        AuthData auth = dataAccess.getAuth(logoutRequest.authToken());
+        if (auth == null){
+            throw new NotAuthorizedException("Error: unauthorized");
+        }
+        dataAccess.deleteAuth(logoutRequest.authToken());
+    }
 }

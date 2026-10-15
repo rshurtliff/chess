@@ -25,14 +25,12 @@ public class Server {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         javalin.delete("/db", this::clearDb);
         javalin.post("/user", this::registerNewUser);
-        javalin.post("/session",this::login);
-        javalin.delete("/session",this::logout);
-        javalin.get("/game",this::listGames);
-        javalin.post("/game",this::createGame);
-        javalin.put("/game",this::joinGame);
+        javalin.post("/session", this::login);
+        javalin.delete("/session", this::logout); // START HERE, above is done
+        javalin.get("/game", this::listGames);
+        javalin.post("/game", this::createGame);
+        javalin.put("/game", this::joinGame);
     }
-
-
 
 
     private void clearDb(Context ctx) {
@@ -43,27 +41,28 @@ public class Server {
 
     private void registerNewUser(Context ctx) {
         RegisterRequest registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
-        if (isBadRegisterRequest(registerRequest)){
+        if (isBadRegisterRequest(registerRequest)) {
             ctx.status(400);
             ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
             return;
         }
         try {
-           RegisterResult registerResult = userService.register(registerRequest);
-           ctx.status(200);
-           ctx.result(serializer.toJson(registerResult));
-        } catch (AlreadyTakenException e){
+            RegisterResult registerResult = userService.register(registerRequest);
+            ctx.status(200);
+            ctx.result(serializer.toJson(registerResult));
+        } catch (AlreadyTakenException e) {
             ctx.status(403);
-            ctx.result(serializer.toJson(Map.of("message","Error: username already taken")));
+            ctx.result(serializer.toJson(Map.of("message", "Error: username already taken")));
         }
     }
 
-    private boolean isBadRegisterRequest(RegisterRequest registerRequest){
+    private boolean isBadRegisterRequest(RegisterRequest registerRequest) {
         return (registerRequest.username() == null || registerRequest.password() == null || registerRequest.email() == null);
     }
-    private void login( Context ctx) {
+
+    private void login(Context ctx) {
         LoginRequest loginRequest = serializer.fromJson(ctx.body(), LoginRequest.class);
-        if(isBadLoginRequest(loginRequest)){
+        if (isBadLoginRequest(loginRequest)) {
             ctx.status(400);
             ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
             return;
@@ -73,18 +72,27 @@ public class Server {
             ctx.status(200);
             ctx.result(serializer.toJson(loginResult));
 
-        } catch (NotAuthorizedException e){
+        } catch (NotAuthorizedException e) {
             ctx.status(401);
             ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
         }
     }
 
-    private boolean isBadLoginRequest(LoginRequest loginRequest){
+    private boolean isBadLoginRequest(LoginRequest loginRequest) {
         return (loginRequest.username() == null || loginRequest.password() == null);
     }
 
     private void logout(Context ctx) {
+        LogoutRequest logoutRequest = new LogoutRequest(ctx.header("authorization"));
+        try {
+            userService.logout(logoutRequest);
+            ctx.status(200);
+        } catch (NotAuthorizedException e) {
+            ctx.status(401);
+            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+        }
     }
+
 
     private void listGames(Context ctx) {
         System.out.println("Testing List Game Endpoint");
