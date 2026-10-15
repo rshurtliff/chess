@@ -5,8 +5,10 @@ import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
+import model.GameData;
 import service.*;
 
+import java.util.Collection;
 import java.util.Map;
 
 public class Server {
@@ -95,11 +97,34 @@ public class Server {
 
 
     private void listGames(Context ctx) {
-        System.out.println("Testing List Game Endpoint");
-
+        String authToken = ctx.header("authorization");
+        try {
+            Collection<GameData> games = adminService.listGames(authToken);
+            ctx.status(200);
+            ctx.result(serializer.toJson(Map.of("games", games)));
+        } catch (NotAuthorizedException e) {
+            ctx.status(401);
+            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+        }
     }
 
+
     private void createGame(Context ctx) {
+        String authToken = ctx.header("authorization");
+        GameData game = serializer.fromJson(ctx.body(), GameData.class);
+        if (game.gameName() == null){
+            ctx.status(400);
+            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            return;
+        }
+        try{
+            int gameID = adminService.createGame(new CreateGameRequest(game.gameName(), authToken));
+            ctx.status(200);
+            ctx.result(serializer.toJson(Map.of("gameID",gameID)));
+        } catch(NotAuthorizedException e){
+            ctx.status(401);
+            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+        }
     }
 
     private void joinGame(Context ctx) {
