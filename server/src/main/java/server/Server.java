@@ -63,6 +63,11 @@ public class Server {
     }
     private void login( Context ctx) {
         LoginRequest loginRequest = serializer.fromJson(ctx.body(), LoginRequest.class);
+        if(isBadLoginRequest(loginRequest)){
+            ctx.status(400);
+            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            return;
+        }
         try {
             LoginResult loginResult = userService.login(loginRequest);
             ctx.status(200);
@@ -72,6 +77,10 @@ public class Server {
             ctx.status(401);
             ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
         }
+    }
+
+    private boolean isBadLoginRequest(LoginRequest loginRequest){
+        return (loginRequest.username() == null || loginRequest.password() == null);
     }
 
     private void logout(Context ctx) {
