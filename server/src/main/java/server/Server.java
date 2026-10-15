@@ -128,8 +128,30 @@ public class Server {
     }
 
     private void joinGame(Context ctx) {
+        String authToken = ctx.header("authorization");
+        JoinGameRequest joinGameRequest = serializer.fromJson(ctx.body(), JoinGameRequest.class);
+        if (isBadJoinGameRequest(joinGameRequest)) {
+            ctx.status(400);
+            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            return;
+        } try{
+            adminService.joinGame(joinGameRequest, authToken);
+        } catch(NotAuthorizedException e){
+            ctx.status(401);
+            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+        } catch(GameNotFoundException e){
+            ctx.status(400);
+            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+        } catch (AlreadyTakenException e){
+            ctx.status(403);
+            ctx.result(serializer.toJson(Map.of("message", "Error: already taken")));
+        }
     }
 
+    private boolean isBadJoinGameRequest(JoinGameRequest joinGameRequest){
+        return (joinGameRequest.gameID() == 0 || joinGameRequest.playerColor() == null ||
+                (!joinGameRequest.playerColor().equals("WHITE") && !joinGameRequest.playerColor().equals("BLACK")));
+    }
 
     public int run(int desiredPort) {
         javalin.start(desiredPort);
