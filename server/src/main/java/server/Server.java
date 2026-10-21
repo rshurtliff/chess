@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.Map;
 
 public class Server {
-    private static final Gson serializer = new Gson();
+    private static final Gson SERIALIZER = new Gson();
     private final Javalin javalin;
     private final AdminService adminService;
     private final UserService userService;
@@ -22,7 +22,7 @@ public class Server {
         DataAccess dataAccess = new MemoryDataAccess();
         adminService = new AdminService(dataAccess);
         userService = new UserService(dataAccess);
-        
+
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         javalin.delete("/db", this::clearDb);
         javalin.post("/user", this::registerNewUser);
@@ -41,19 +41,19 @@ public class Server {
     }
 
     private void registerNewUser(Context ctx) {
-        RegisterRequest registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
+        RegisterRequest registerRequest = SERIALIZER.fromJson(ctx.body(), RegisterRequest.class);
         if (isBadRegisterRequest(registerRequest)) {
             ctx.status(400);
-            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: bad request")));
             return;
         }
         try {
             RegisterResult registerResult = userService.register(registerRequest);
             ctx.status(200);
-            ctx.result(serializer.toJson(registerResult));
+            ctx.result(SERIALIZER.toJson(registerResult));
         } catch (AlreadyTakenException e) {
             ctx.status(403);
-            ctx.result(serializer.toJson(Map.of("message", "Error: username already taken")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: username already taken")));
         }
     }
 
@@ -62,20 +62,20 @@ public class Server {
     }
 
     private void login(Context ctx) {
-        LoginRequest loginRequest = serializer.fromJson(ctx.body(), LoginRequest.class);
+        LoginRequest loginRequest = SERIALIZER.fromJson(ctx.body(), LoginRequest.class);
         if (isBadLoginRequest(loginRequest)) {
             ctx.status(400);
-            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: bad request")));
             return;
         }
         try {
             LoginResult loginResult = userService.login(loginRequest);
             ctx.status(200);
-            ctx.result(serializer.toJson(loginResult));
+            ctx.result(SERIALIZER.toJson(loginResult));
 
         } catch (NotAuthorizedException e) {
             ctx.status(401);
-            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: unauthorized")));
         }
     }
 
@@ -90,7 +90,7 @@ public class Server {
             ctx.status(200);
         } catch (NotAuthorizedException e) {
             ctx.status(401);
-            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: unauthorized")));
         }
     }
 
@@ -100,51 +100,51 @@ public class Server {
         try {
             Collection<GameData> games = adminService.listGames(authToken);
             ctx.status(200);
-            ctx.result(serializer.toJson(Map.of("games", games)));
+            ctx.result(SERIALIZER.toJson(Map.of("games", games)));
         } catch (NotAuthorizedException e) {
             ctx.status(401);
-            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: unauthorized")));
         }
     }
 
 
     private void createGame(Context ctx) {
         String authToken = ctx.header("authorization");
-        GameData game = serializer.fromJson(ctx.body(), GameData.class);
+        GameData game = SERIALIZER.fromJson(ctx.body(), GameData.class);
         if (game.gameName() == null) {
             ctx.status(400);
-            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: bad request")));
             return;
         }
         try {
             int gameID = adminService.createGame(new CreateGameRequest(game.gameName(), authToken));
             ctx.status(200);
-            ctx.result(serializer.toJson(Map.of("gameID", gameID)));
+            ctx.result(SERIALIZER.toJson(Map.of("gameID", gameID)));
         } catch (NotAuthorizedException e) {
             ctx.status(401);
-            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: unauthorized")));
         }
     }
 
     private void joinGame(Context ctx) {
         String authToken = ctx.header("authorization");
-        JoinGameRequest joinGameRequest = serializer.fromJson(ctx.body(), JoinGameRequest.class);
+        JoinGameRequest joinGameRequest = SERIALIZER.fromJson(ctx.body(), JoinGameRequest.class);
         if (isBadJoinGameRequest(joinGameRequest)) {
             ctx.status(400);
-            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: bad request")));
             return;
         }
         try {
             adminService.joinGame(joinGameRequest, authToken);
         } catch (NotAuthorizedException e) {
             ctx.status(401);
-            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: unauthorized")));
         } catch (GameNotFoundException e) {
             ctx.status(400);
-            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: bad request")));
         } catch (AlreadyTakenException e) {
             ctx.status(403);
-            ctx.result(serializer.toJson(Map.of("message", "Error: already taken")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: already taken")));
         }
     }
 

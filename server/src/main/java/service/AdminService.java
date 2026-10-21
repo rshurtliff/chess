@@ -34,7 +34,8 @@ public class AdminService {
         return dataAccess.createGame(createGameRequest.gameName());
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest, String authToken) throws NotAuthorizedException, GameNotFoundException, AlreadyTakenException {
+    public void joinGame(JoinGameRequest joinGameRequest, String authToken)
+            throws NotAuthorizedException, GameNotFoundException, AlreadyTakenException {
         AuthData auth = dataAccess.getAuth(authToken);
         if (auth == null) {
             throw new NotAuthorizedException("Error: unauthorized");
