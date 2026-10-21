@@ -22,8 +22,7 @@ public class Server {
         DataAccess dataAccess = new MemoryDataAccess();
         adminService = new AdminService(dataAccess);
         userService = new UserService(dataAccess);
-
-        // Register your endpoints and exception handlers here.
+        
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         javalin.delete("/db", this::clearDb);
         javalin.post("/user", this::registerNewUser);
@@ -112,16 +111,16 @@ public class Server {
     private void createGame(Context ctx) {
         String authToken = ctx.header("authorization");
         GameData game = serializer.fromJson(ctx.body(), GameData.class);
-        if (game.gameName() == null){
+        if (game.gameName() == null) {
             ctx.status(400);
             ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
             return;
         }
-        try{
+        try {
             int gameID = adminService.createGame(new CreateGameRequest(game.gameName(), authToken));
             ctx.status(200);
-            ctx.result(serializer.toJson(Map.of("gameID",gameID)));
-        } catch(NotAuthorizedException e){
+            ctx.result(serializer.toJson(Map.of("gameID", gameID)));
+        } catch (NotAuthorizedException e) {
             ctx.status(401);
             ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
         }
@@ -134,21 +133,22 @@ public class Server {
             ctx.status(400);
             ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
             return;
-        } try{
+        }
+        try {
             adminService.joinGame(joinGameRequest, authToken);
-        } catch(NotAuthorizedException e){
+        } catch (NotAuthorizedException e) {
             ctx.status(401);
             ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
-        } catch(GameNotFoundException e){
+        } catch (GameNotFoundException e) {
             ctx.status(400);
             ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
-        } catch (AlreadyTakenException e){
+        } catch (AlreadyTakenException e) {
             ctx.status(403);
             ctx.result(serializer.toJson(Map.of("message", "Error: already taken")));
         }
     }
 
-    private boolean isBadJoinGameRequest(JoinGameRequest joinGameRequest){
+    private boolean isBadJoinGameRequest(JoinGameRequest joinGameRequest) {
         return (joinGameRequest.gameID() == 0 || joinGameRequest.playerColor() == null ||
                 (!joinGameRequest.playerColor().equals("WHITE") && !joinGameRequest.playerColor().equals("BLACK")));
     }
