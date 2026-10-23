@@ -14,8 +14,10 @@ public class DatabaseDataAccess implements DataAccess {
 
     public static void main(String[] args) throws DataAccessException {
         var DAO = new DatabaseDataAccess();
-        DAO.register(new UserData("user", "pw", "fake@yahoo.com"), new AuthData("auth-123456", "user"));
-
+//        DAO.register(new UserData("user", "pw", "fake@yahoo.com"), new AuthData("auth-123456", "user"));
+        var userData = DAO.getUser("user");
+        System.out.println(userData);
+//        DAO.clear();
     }
 
     public DatabaseDataAccess() throws DataAccessException {
@@ -99,12 +101,19 @@ public class DatabaseDataAccess implements DataAccess {
 
     @Override
     public UserData getUser(String username) throws DataAccessException {
-        try (var conn = getConnection()) {
+        try (var conn = getConnection();
+             var stmt = conn.prepareStatement("SELECT * FROM users WHERE username = ?;")) {
+            stmt.setString(1, username);
+            var rs = stmt.executeQuery();
+            if (rs.next()) {
+                return (new UserData(rs.getString("username"), rs.getString("password"), rs.getString("email")));
+            } else {
+                return null;
+            }
 
         } catch (SQLException e) {
             throw new DataAccessException("Failed to Clear");
         }
-        return null;
     }
 
     @Override
