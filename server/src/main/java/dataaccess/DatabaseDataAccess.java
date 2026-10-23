@@ -16,6 +16,7 @@ public class DatabaseDataAccess implements DataAccess {
         var DAO = new DatabaseDataAccess();
 //        DAO.register(new UserData("user", "pw", "fake@yahoo.com"), new AuthData("auth-123456", "user"));
         var userData = DAO.getUser("user");
+        DAO.createAuth(new AuthData("auth-testing", "user"));
         System.out.println(userData);
 //        DAO.clear();
     }
@@ -74,7 +75,6 @@ public class DatabaseDataAccess implements DataAccess {
                 try (var statement = conn.prepareStatement(sql)) {
                     statement.executeUpdate();
                 }
-                //do stuff here
             }
         } catch (SQLException e) {
             throw new DataAccessException("Failed to Clear");
@@ -95,7 +95,7 @@ public class DatabaseDataAccess implements DataAccess {
             authsStmt.setString(2, authData.username());
             authsStmt.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to Clear");
+            throw new DataAccessException("Failed to Register User");
         }
     }
 
@@ -110,18 +110,22 @@ public class DatabaseDataAccess implements DataAccess {
             } else {
                 return null;
             }
-
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to Clear");
+            throw new DataAccessException("Failed to getUser");
         }
     }
 
     @Override
     public void createAuth(AuthData auth) throws DataAccessException {
-        try (var conn = getConnection()) {
+        try (var conn = getConnection();
+             var stmt = conn.prepareStatement("INSERT INTO auths (auth, username) VALUES (?, ?);")
+        ) {
+            stmt.setString(1, auth.authToken());
+            stmt.setString(2, auth.username());
+            stmt.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to Clear");
+            throw new DataAccessException("Failed to createAuth");
         }
 
     }
