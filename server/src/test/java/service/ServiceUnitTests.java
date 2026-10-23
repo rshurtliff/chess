@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import org.junit.jupiter.api.*;
 
@@ -23,7 +24,7 @@ public class ServiceUnitTests {
     }
 
     @Test
-    public void successfulRegistration() throws AlreadyTakenException {
+    public void successfulRegistration() throws AlreadyTakenException, DataAccessException {
         RegisterResult result = user.register(registerRequest);
 
         Assertions.assertEquals("username", result.username());
@@ -32,13 +33,13 @@ public class ServiceUnitTests {
     }
 
     @Test
-    public void takenRegistration() throws AlreadyTakenException {
+    public void takenRegistration() throws AlreadyTakenException, DataAccessException {
         user.register(registerRequest);
         Assertions.assertThrows(AlreadyTakenException.class, () -> user.register(registerRequest));
     }
 
     @Test
-    public void successfulLogin() throws NotAuthorizedException, AlreadyTakenException {
+    public void successfulLogin() throws NotAuthorizedException, AlreadyTakenException, DataAccessException {
         user.register(registerRequest);
         LoginResult result = user.login(new LoginRequest("username", "password"));
         Assertions.assertEquals("username", result.username());
@@ -47,14 +48,14 @@ public class ServiceUnitTests {
     }
 
     @Test
-    public void wrongPassword() throws AlreadyTakenException {
+    public void wrongPassword() throws AlreadyTakenException, DataAccessException {
         user.register(registerRequest);
         Assertions.assertThrows(NotAuthorizedException.class, () ->
                 user.login(new LoginRequest("username", "thisIsWrong")));
     }
 
     @Test
-    public void successfulLogout() throws AlreadyTakenException, NotAuthorizedException {
+    public void successfulLogout() throws AlreadyTakenException, NotAuthorizedException, DataAccessException {
         String authToken = user.register(registerRequest).authToken();
         user.logout(new LogoutRequest(authToken));
 
@@ -62,7 +63,7 @@ public class ServiceUnitTests {
     }
 
     @Test
-    public void failedLogout() throws AlreadyTakenException {
+    public void failedLogout() throws AlreadyTakenException, DataAccessException {
         String authToken = "madeUpAuthToken";
         Assertions.assertThrows(NotAuthorizedException.class,
                 () -> user.logout(new LogoutRequest(authToken)));

@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import model.AuthData;
 import model.GameData;
 
@@ -14,11 +15,11 @@ public class AdminService {
         this.dataAccess = dataAccess;
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         dataAccess.clear();
     }
 
-    public Collection<GameData> listGames(String authToken) throws NotAuthorizedException {
+    public Collection<GameData> listGames(String authToken) throws NotAuthorizedException, DataAccessException {
         AuthData auth = dataAccess.getAuth(authToken);
         if (auth == null) {
             throw new NotAuthorizedException("Error: unauthorized");
@@ -26,7 +27,7 @@ public class AdminService {
         return dataAccess.listGames();
     }
 
-    public int createGame(CreateGameRequest createGameRequest) throws NotAuthorizedException {
+    public int createGame(CreateGameRequest createGameRequest) throws NotAuthorizedException, DataAccessException {
         AuthData auth = dataAccess.getAuth(createGameRequest.authToken());
         if (auth == null) {
             throw new NotAuthorizedException("Error: unauthorized");
@@ -35,7 +36,7 @@ public class AdminService {
     }
 
     public void joinGame(JoinGameRequest joinGameRequest, String authToken)
-            throws NotAuthorizedException, GameNotFoundException, AlreadyTakenException {
+            throws NotAuthorizedException, GameNotFoundException, AlreadyTakenException, DataAccessException {
         AuthData auth = dataAccess.getAuth(authToken);
         if (auth == null) {
             throw new NotAuthorizedException("Error: unauthorized");

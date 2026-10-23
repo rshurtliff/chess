@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
@@ -34,10 +35,14 @@ public class Server {
     }
 
 
-    private void clearDb(Context ctx) {
-        adminService.clear();
-        ctx.status(200);
-
+    private void clearDb(Context ctx) throws DataAccessException {
+        try {
+            adminService.clear();
+            ctx.status(200);
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: Internal Server Error")));
+        }
     }
 
     private void registerNewUser(Context ctx) {
@@ -54,6 +59,9 @@ public class Server {
         } catch (AlreadyTakenException e) {
             ctx.status(403);
             ctx.result(SERIALIZER.toJson(Map.of("message", "Error: username already taken")));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: Internal Server Error")));
         }
     }
 
@@ -76,6 +84,9 @@ public class Server {
         } catch (NotAuthorizedException e) {
             ctx.status(401);
             ctx.result(SERIALIZER.toJson(Map.of("message", "Error: unauthorized")));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: Internal Server Error")));
         }
     }
 
@@ -91,6 +102,9 @@ public class Server {
         } catch (NotAuthorizedException e) {
             ctx.status(401);
             ctx.result(SERIALIZER.toJson(Map.of("message", "Error: unauthorized")));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: Internal Server Error")));
         }
     }
 
@@ -104,6 +118,9 @@ public class Server {
         } catch (NotAuthorizedException e) {
             ctx.status(401);
             ctx.result(SERIALIZER.toJson(Map.of("message", "Error: unauthorized")));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: Internal Server Error")));
         }
     }
 
@@ -123,6 +140,9 @@ public class Server {
         } catch (NotAuthorizedException e) {
             ctx.status(401);
             ctx.result(SERIALIZER.toJson(Map.of("message", "Error: unauthorized")));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: Internal Server Error")));
         }
     }
 
@@ -145,6 +165,9 @@ public class Server {
         } catch (AlreadyTakenException e) {
             ctx.status(403);
             ctx.result(SERIALIZER.toJson(Map.of("message", "Error: already taken")));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: Internal Server Error")));
         }
     }
 
