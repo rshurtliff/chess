@@ -14,7 +14,7 @@ public class DatabaseDataAccess implements DataAccess {
 
     public static void main(String[] args) throws DataAccessException {
         var DAO = new DatabaseDataAccess();
-        DAO.clear();
+        DAO.register(new UserData("user", "pw", "fake@yahoo.com"), new AuthData("auth-123456", "user"));
 
     }
 
@@ -56,7 +56,7 @@ public class DatabaseDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to Clear");
+            throw new DataAccessException("Failed to initialize");
         }
 
 
@@ -82,8 +82,17 @@ public class DatabaseDataAccess implements DataAccess {
 
     @Override
     public void register(UserData userData, AuthData authData) throws DataAccessException {
-        try (var conn = getConnection()) {
+        try (var conn = getConnection();
+             var usersStmt = conn.prepareStatement("INSERT INTO users (username, password, email) VALUES (?, ?, ?);");
+             var authsStmt = conn.prepareStatement("INSERT INTO auths (auth, username) VALUES (?, ?);")) {
+            usersStmt.setString(1, userData.username());
+            usersStmt.setString(2, userData.password());
+            usersStmt.setString(3, userData.email());
+            usersStmt.executeUpdate();
 
+            authsStmt.setString(1, authData.authToken());
+            authsStmt.setString(2, authData.username());
+            authsStmt.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("Failed to Clear");
         }
