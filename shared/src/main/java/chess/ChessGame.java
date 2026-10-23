@@ -57,6 +57,7 @@ public class ChessGame {
         BLACK
     }
 
+
     /**
      * Gets all valid moves for a piece at the given location
      *
@@ -154,14 +155,17 @@ public class ChessGame {
 
     /**
      * Determines whether a team has valid moves remaining.
+     *
      * @param teamColor which team to check
      * @return true if there's valid moves
      */
-    public boolean hasValidMoves(TeamColor teamColor){
+    public boolean hasValidMoves(TeamColor teamColor) {
         boolean hasValidMoves = false;
         Collection<ChessPosition> friendlyPositions = gameBoard.findAllPieces(teamColor);
-        for (ChessPosition pos : friendlyPositions){
-            if (!validMoves(pos).isEmpty()){hasValidMoves = true;}
+        for (ChessPosition pos : friendlyPositions) {
+            if (!validMoves(pos).isEmpty()) {
+                hasValidMoves = true;
+            }
         }
         return hasValidMoves;
     }

@@ -21,8 +21,9 @@ public class DatabaseDataAccess implements DataAccess {
 
         var userData = DAO.getUser("user");
         var authData = DAO.getAuth("auth-testing");
-        DAO.createGame("testing");
-        DAO.deleteAuth("auth-testing");
+//        DAO.createGame("testing");
+
+//        System.out.println(DAO.getGame(1).game().getTeamTurn());
 
 
 //        System.out.println(authData);
@@ -192,12 +193,18 @@ public class DatabaseDataAccess implements DataAccess {
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
-        try (var conn = getConnection()) {
-
+        try (var conn = getConnection();
+             var stmt = conn.prepareStatement("SELECT * FROM games WHERE id = ?")) {
+            stmt.setInt(1, gameID);
+            var rs = stmt.executeQuery();
+            if (rs.next()) {
+                ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
+                return new GameData(rs.getInt("id"), rs.getString("wht_username"), rs.getString("blk_username"), rs.getString("game_name"), game);
+            }
+            return null;
         } catch (SQLException e) {
             throw new DataAccessException("Failed to Clear");
         }
-        return null;
     }
 
     @Override
