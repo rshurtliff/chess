@@ -10,24 +10,29 @@ import java.util.List;
 public class DatabaseDataAccess implements DataAccess {
     //create an instance and configure the database, get the connection, set Catalog to the DB.
     //RETURN_GENERATED_KEYS gives you back the ID that the database creates. You need this for updates
-    private String[] CREATE_STATEMENTs = {"""
+    private String[] CREATE_STATEMENTS = {"""
             CREATE TABLE IF NOT EXISTS users (
-            
-            )""",
+                 username VARCHAR(256) NOT NULL,
+                 password VARCHAR(256) NOT NULL,
+                 email VARCHAR(256) NOT NULL,
+                 PRIMARY KEY (username)
+             );""",
 
             """
-            CREATE TABLE IF NOT EXISTS auths(
-            
-            )""",
+            CREATE TABLE IF NOT EXISTS auths (
+                 auth VARCHAR(256) NOT NULL,
+                 username VARCHAR(256) NOT NULL,
+                 PRIMARY KEY (auth)
+             );""",
 
             """
             CREATE TABLE IF NOT EXISTS games(
-            id INT NOT NULL AUTO_INCREMENT,
-            wht_username VARCHAR(256),
-            blk_username VARCHAR(256),
-            game_name VARCHAR(256) NOT NULL,
-            game TEXT NOT NULL,
-            PRIMARY KEY (id)
+                id INT NOT NULL AUTO_INCREMENT,
+                wht_username VARCHAR(256),
+                blk_username VARCHAR(256),
+                game_name VARCHAR(256) NOT NULL,
+                game TEXT NOT NULL,
+                PRIMARY KEY (id)
             )"""
     };
 
