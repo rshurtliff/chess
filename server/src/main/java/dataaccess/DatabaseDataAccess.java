@@ -1,5 +1,7 @@
 package dataaccess;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -19,6 +21,7 @@ public class DatabaseDataAccess implements DataAccess {
 
         var userData = DAO.getUser("user");
         var authData = DAO.getAuth("auth-testing");
+        DAO.createGame("testing");
         DAO.deleteAuth("auth-testing");
 
 
@@ -174,8 +177,13 @@ public class DatabaseDataAccess implements DataAccess {
 
     @Override
     public int createGame(String gameName) throws DataAccessException {
-        try (var conn = getConnection()) {
-
+        try (var conn = getConnection();
+             var stmt = conn.prepareStatement("""
+                     INSERT INTO games(game_name, game)
+                     VALUES(?, ?);""")) {
+            stmt.setString(1, gameName);
+            stmt.setString(2, new Gson().toJson(new ChessGame()));
+            stmt.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("Failed to Clear");
         }
