@@ -8,6 +8,7 @@ import model.GameData;
 import model.UserData;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,10 +22,8 @@ public class DatabaseDataAccess implements DataAccess {
 //        DAO.register(new UserData("user", "pw", "fake@yahoo.com"), new AuthData("auth-123456", "user"));
 //        DAO.createAuth(new AuthData("auth-testing", "user"));
 
-        var userData = DAO.getUser("user");
-        var authData = DAO.getAuth("auth-testing");
-//        DAO.createGame("testing");
-        DAO.getGame(1);
+
+        DAO.createGame("testing2");
         System.out.println(DAO.listGames());
 
 
@@ -189,14 +188,18 @@ public class DatabaseDataAccess implements DataAccess {
         try (var conn = getConnection();
              var stmt = conn.prepareStatement("""
                      INSERT INTO games(game_name, game)
-                     VALUES(?, ?);""")) {
+                     VALUES(?, ?);""", Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, gameName);
             stmt.setString(2, new Gson().toJson(new ChessGame()));
             stmt.executeUpdate();
+
+            var generatedKeys = stmt.getGeneratedKeys();
+            generatedKeys.next();
+            return generatedKeys.getInt(1);
+
         } catch (SQLException e) {
             throw new DataAccessException("Failed to create game");
         }
-        return 0;
     }
 
     @Override
@@ -218,7 +221,7 @@ public class DatabaseDataAccess implements DataAccess {
     @Override
     public void updateGame(GameData updatedGame) throws DataAccessException {
         try (var conn = getConnection();
-             var stmt = conn.prepareStatement("UPDATE games SET game = ?, wht_username = ?, blk username = ? WHERE id = ?")) {
+             var stmt = conn.prepareStatement("UPDATE games SET game = ?, wht_username = ?, blk_username = ? WHERE id = ?")) {
             stmt.setString(1, new Gson().toJson(updatedGame.game()));
             stmt.setString(2, updatedGame.whiteUsername());
             stmt.setString(3, updatedGame.blackUsername());

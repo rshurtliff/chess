@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
+import dataaccess.DatabaseDataAccess;
 import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
@@ -20,9 +21,13 @@ public class Server {
 
 
     public Server() {
-        DataAccess dataAccess = new MemoryDataAccess();
-        adminService = new AdminService(dataAccess);
-        userService = new UserService(dataAccess);
+        try {
+            DataAccess dataAccess = new DatabaseDataAccess();
+            adminService = new AdminService(dataAccess);
+            userService = new UserService(dataAccess);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("couldn't get conection to Database");
+        }
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         javalin.delete("/db", this::clearDb);
