@@ -1,12 +1,14 @@
 package dataaccess;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -22,11 +24,10 @@ public class DatabaseDataAccess implements DataAccess {
         var userData = DAO.getUser("user");
         var authData = DAO.getAuth("auth-testing");
 //        DAO.createGame("testing");
+        DAO.getGame(1);
+        System.out.println(DAO.listGames());
 
-//        System.out.println(DAO.getGame(1).game().getTeamTurn());
 
-
-//        System.out.println(authData);
     }
 
     public DatabaseDataAccess() throws DataAccessException {
@@ -168,12 +169,19 @@ public class DatabaseDataAccess implements DataAccess {
 
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
-        try (var conn = getConnection()) {
-
+        Collection<GameData> games_list = new ArrayList<>();
+        try (var conn = getConnection();
+             var stmt = conn.prepareStatement("SELECT * FROM games;")) {
+            var rs = stmt.executeQuery();
+            while (rs.next()) {
+                ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
+                GameData gameData = new GameData(rs.getInt("id"), rs.getString("wht_username"), rs.getString("blk_username"), rs.getString("game_name"), game);
+                games_list.add(gameData);
+            }
+            return games_list;
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to Clear");
+            throw new DataAccessException("Failed to list games");
         }
-        return List.of();
     }
 
     @Override
@@ -186,7 +194,7 @@ public class DatabaseDataAccess implements DataAccess {
             stmt.setString(2, new Gson().toJson(new ChessGame()));
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to Clear");
+            throw new DataAccessException("Failed to create game");
         }
         return 0;
     }
@@ -203,16 +211,22 @@ public class DatabaseDataAccess implements DataAccess {
             }
             return null;
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to Clear");
+            throw new DataAccessException("Failed to get game");
         }
     }
 
     @Override
     public void updateGame(GameData updatedGame) throws DataAccessException {
-        try (var conn = getConnection()) {
+        try (var conn = getConnection();
+             var stmt = conn.prepareStatement("UPDATE games SET game = ?, wht_username = ?, blk username = ? WHERE id = ?")) {
+            stmt.setString(1, new Gson().toJson(updatedGame.game()));
+            stmt.setString(2, updatedGame.whiteUsername());
+            stmt.setString(3, updatedGame.blackUsername());
+            stmt.setInt(4, updatedGame.gameID());
+            stmt.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to Clear");
+            throw new DataAccessException("Failed to Update Game");
         }
 
     }
