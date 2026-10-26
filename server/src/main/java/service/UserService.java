@@ -4,6 +4,7 @@ import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.UUID;
 
@@ -43,7 +44,9 @@ public class UserService {
     }
 
     private boolean isValidPassword(LoginRequest loginRequest, UserData user) {
-        return (user != null && loginRequest.password().equals(user.password()));
+        return (user != null &&
+                BCrypt.checkpw(loginRequest.password(), user.password()));
+//                loginRequest.password().equals(user.password()));
     }
 
     public void logout(LogoutRequest logoutRequest) throws NotAuthorizedException, DataAccessException {

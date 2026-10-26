@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -91,11 +92,12 @@ public class DatabaseDataAccess implements DataAccess {
 
     @Override
     public void register(UserData userData, AuthData authData) throws DataAccessException {
+        String pw = hashPassword(userData.password());
         try (var conn = getConnection();
              var usersStmt = conn.prepareStatement("INSERT INTO users (username, password, email) VALUES (?, ?, ?);");
              var authsStmt = conn.prepareStatement("INSERT INTO auths (auth, username) VALUES (?, ?);")) {
             usersStmt.setString(1, userData.username());
-            usersStmt.setString(2, userData.password());
+            usersStmt.setString(2, pw);
             usersStmt.setString(3, userData.email());
             usersStmt.executeUpdate();
 
@@ -105,6 +107,10 @@ public class DatabaseDataAccess implements DataAccess {
         } catch (SQLException e) {
             throw new DataAccessException("Failed to Register User");
         }
+    }
+
+    private String hashPassword(String secret) {
+        return BCrypt.hashpw(secret, BCrypt.gensalt());
     }
 
     @Override
