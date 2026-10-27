@@ -20,7 +20,7 @@ import java.util.Collection;
 
 
 public class DataAccessUnitTests {
-    private DataAccess DAO;
+    private static DataAccess DAO;
     private static final UserData TEST_USER = new UserData("test-username", "test-pw", "test@gmail.com");
     private static final AuthData TEST_AUTH = new AuthData("test-auth", "test-username");
 

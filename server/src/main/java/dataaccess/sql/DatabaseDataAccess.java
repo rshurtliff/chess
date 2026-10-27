@@ -22,7 +22,7 @@ public class DatabaseDataAccess implements DataAccess {
         DatabaseManager.createDatabase();
 
         try (var conn = getConnection()) {
-            String[] CREATE_STATEMENTS = {"""
+            String[] createStatements = {"""
             CREATE TABLE IF NOT EXISTS users (
                  username VARCHAR(256) NOT NULL,
                  password VARCHAR(256) NOT NULL,
@@ -47,7 +47,7 @@ public class DatabaseDataAccess implements DataAccess {
                 PRIMARY KEY (id)
             )"""
             };
-            for (var sql : CREATE_STATEMENTS) {
+            for (var sql : createStatements) {
                 try (var statement = conn.prepareStatement(sql)) {
                     statement.executeUpdate();
                 }
@@ -165,7 +165,8 @@ public class DatabaseDataAccess implements DataAccess {
             var rs = stmt.executeQuery();
             while (rs.next()) {
                 ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
-                GameData gameData = new GameData(rs.getInt("id"), rs.getString("wht_username"), rs.getString("blk_username"), rs.getString("game_name"), game);
+                GameData gameData = new GameData(rs.getInt("id"), rs.getString("wht_username"),
+                        rs.getString("blk_username"), rs.getString("game_name"), game);
                 games_list.add(gameData);
             }
             return games_list;
