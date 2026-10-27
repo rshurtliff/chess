@@ -21,10 +21,14 @@ public class UserService {
         if (user != null) {
             throw new AlreadyTakenException("Error: username already taken");
         }
-        user = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
+        user = new UserData(registerRequest.username(), hashPassword(registerRequest.password()), registerRequest.email());
         AuthData auth = new AuthData(generateToken(), registerRequest.username());
         dataAccess.register(user, auth);
         return new RegisterResult(user.username(), auth.authToken());
+    }
+
+    private String hashPassword(String secret) {
+        return BCrypt.hashpw(secret, BCrypt.gensalt());
     }
 
     public static String generateToken() {
@@ -46,7 +50,6 @@ public class UserService {
     private boolean isValidPassword(LoginRequest loginRequest, UserData user) {
         return (user != null &&
                 BCrypt.checkpw(loginRequest.password(), user.password()));
-//                loginRequest.password().equals(user.password()));
     }
 
     public void logout(LogoutRequest logoutRequest) throws NotAuthorizedException, DataAccessException {
