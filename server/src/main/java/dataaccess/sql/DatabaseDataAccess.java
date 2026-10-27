@@ -1,8 +1,9 @@
-package dataaccess;
+package dataaccess.sql;
 
 import chess.ChessGame;
-import chess.ChessMove;
 import com.google.gson.Gson;
+import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -12,30 +13,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
-import static dataaccess.DatabaseManager.getConnection;
+import static dataaccess.sql.DatabaseManager.getConnection;
 
 public class DatabaseDataAccess implements DataAccess {
-
-    public static void main(String[] args) throws DataAccessException {
-        var DAO = new DatabaseDataAccess();
-//        DAO.register(new UserData("user", "pw", "fake@yahoo.com"), new AuthData("auth-123456", "user"));
-//        DAO.createAuth(new AuthData("auth-testing", "user"));
-
-
-        DAO.createGame("testing2");
-        System.out.println(DAO.listGames());
-
-
-    }
 
     public DatabaseDataAccess() throws DataAccessException {
         DatabaseManager.createDatabase();
 
         try (var conn = getConnection()) {
-            //create an instance and configure the database, get the connection, set Catalog to the DB.
-            //RETURN_GENERATED_KEYS gives you back the ID that the database creates. You need this for updates
             String[] CREATE_STATEMENTS = {"""
             CREATE TABLE IF NOT EXISTS users (
                  username VARCHAR(256) NOT NULL,
@@ -92,12 +78,11 @@ public class DatabaseDataAccess implements DataAccess {
 
     @Override
     public void register(UserData userData, AuthData authData) throws DataAccessException {
-        String pw = hashPassword(userData.password());
         try (var conn = getConnection();
              var usersStmt = conn.prepareStatement("INSERT INTO users (username, password, email) VALUES (?, ?, ?);");
              var authsStmt = conn.prepareStatement("INSERT INTO auths (auth, username) VALUES (?, ?);")) {
             usersStmt.setString(1, userData.username());
-            usersStmt.setString(2, pw);
+            usersStmt.setString(2, userData.password());
             usersStmt.setString(3, userData.email());
             usersStmt.executeUpdate();
 
