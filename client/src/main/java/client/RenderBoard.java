@@ -10,10 +10,11 @@ import java.util.Map;
 import static ui.EscapeSequences.*;
 
 public class RenderBoard {
-    private static final String COL_LABEL = "    a  b  c  d  e  f  g  h \n";
+    private static final String WHT_COL_LABEL = "    a  b  c  d  e  f  g  h \n";
+    private static final String BLK_COL_LABEL = "    h  g  f  e  d  c  b  a \n";
 
-    public static void printBoard(ChessBoard board) {
-        System.out.print(COL_LABEL);
+    public static void printBoardForWhite(ChessBoard board) {
+        System.out.print(WHT_COL_LABEL);
         //loops from 8 to 1 for the white perspective. you'll loop from 1 to 8 for black perspective. you'll have to change the color ternary too
         for (int r = 8; r >= 1; r--) {
             System.out.print(" " + r + " ");
@@ -25,7 +26,23 @@ public class RenderBoard {
             System.out.print(" " + r + " ");
             System.out.print("\n");
         }
-        System.out.print(COL_LABEL);
+        System.out.print(WHT_COL_LABEL);
+    }
+
+    public static void printBoardForBlack(ChessBoard board) {
+        System.out.print(BLK_COL_LABEL);
+        //loops from 8 to 1 for the white perspective. you'll loop from 1 to 8 for black perspective. you'll have to change the color ternary too
+        for (int r = 1; r <= 8; r++) {
+            System.out.print(" " + r + " ");
+            for (int c = 8; c >= 1; c--) {
+                var color = (r + c) % 2 == 0 ? SET_BG_COLOR_BLACK : SET_BG_COLOR_WHITE;
+                ChessPiece piece = board.getPiece(new ChessPosition(r, c));
+                System.out.print(color + getEscapeSequence(piece) + RESET_BG_COLOR);
+            }
+            System.out.print(" " + r + " ");
+            System.out.print("\n");
+        }
+        System.out.print(BLK_COL_LABEL);
     }
 
     private static String getEscapeSequence(ChessPiece piece) {
