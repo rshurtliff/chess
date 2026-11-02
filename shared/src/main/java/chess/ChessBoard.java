@@ -19,8 +19,8 @@ public class ChessBoard {
     public ChessBoard() {
     }
 
-    public ChessBoard(ChessBoard other){
-        for (int i = 0; i < board.length; i++){
+    public ChessBoard(ChessBoard other) {
+        for (int i = 0; i < board.length; i++) {
             this.board[i] = other.board[i].clone();
         }
     }
@@ -43,8 +43,7 @@ public class ChessBoard {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (ChessPiece[] row : board) { //loop backwards instead
-//            sb.append(Arrays.toString(row)).append("\n");
-            sb.insert(0,Arrays.toString(row) + "\n");
+            sb.insert(0, Arrays.toString(row) + "\n");
         }
         return "ChessBoard: \n" +
                 sb.toString();
@@ -71,21 +70,23 @@ public class ChessBoard {
         return board[position.getRow() - 1][position.getColumn() - 1];
 
     }
+
     /**
-        this is a helper method for valid moves. Doesn't check whether the move
-     is valid or throw any exceptions
+     * this is a helper method for valid moves. Doesn't check whether the move
+     * is valid or throw any exceptions
      */
-    public void movePieceHelper(ChessMove move){
+    public void movePieceHelper(ChessMove move) {
         ChessPiece newPiece;
-        if (move.getPromotionPiece() == null){
+        if (move.getPromotionPiece() == null) {
             newPiece = getPiece(move.getStartPosition());
-        } else{
+        } else {
             ChessGame.TeamColor color = getPiece(move.getStartPosition()).getTeamColor();
             newPiece = new ChessPiece(color, move.getPromotionPiece());
         }
-        addPiece(move.getStartPosition(),null);
-        addPiece(move.getEndPosition(),newPiece);
+        addPiece(move.getStartPosition(), null);
+        addPiece(move.getEndPosition(), newPiece);
     }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
@@ -118,11 +119,14 @@ public class ChessBoard {
      */
     public ChessPosition findKing(ChessGame.TeamColor teamColor) {
         Collection<ChessPosition> filledPositions = findAllPieces(teamColor);
-        for (ChessPosition pos : filledPositions){
-            if (getPiece(pos).getPieceType() == ChessPiece.PieceType.KING){return pos;}
+        for (ChessPosition pos : filledPositions) {
+            if (getPiece(pos).getPieceType() == ChessPiece.PieceType.KING) {
+                return pos;
+            }
         }
         return null;
     }
+
     /**
      * returns the positions of all pieces of a certain color
      */
@@ -132,7 +136,7 @@ public class ChessBoard {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition pos = new ChessPosition(row, col);
                 ChessPiece piece = getPiece(pos);
-                if (piece != null && piece.getTeamColor() == teamColor){
+                if (piece != null && piece.getTeamColor() == teamColor) {
                     filledPositions.add(pos);
                 }
             }
