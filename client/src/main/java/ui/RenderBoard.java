@@ -15,7 +15,6 @@ public class RenderBoard {
 
     public static void printBoardForWhite(ChessBoard board) {
         System.out.print(WHT_COL_LABEL);
-        //loops from 8 to 1 for the white perspective. you'll loop from 1 to 8 for black perspective. you'll have to change the color ternary too
         for (int r = 8; r >= 1; r--) {
             System.out.print(" " + r + " ");
             for (int c = 1; c <= 8; c++) {
@@ -31,7 +30,6 @@ public class RenderBoard {
 
     public static void printBoardForBlack(ChessBoard board) {
         System.out.print(BLK_COL_LABEL);
-        //loops from 8 to 1 for the white perspective. you'll loop from 1 to 8 for black perspective. you'll have to change the color ternary too
         for (int r = 1; r <= 8; r++) {
             System.out.print(" " + r + " ");
             for (int c = 8; c >= 1; c--) {
