@@ -41,23 +41,19 @@ public class Repl {
     }
 
     private void handePreLogin(String input) {
-
         String[] arguments = input.trim().split("\\s+");
         if (!validateArguments(arguments)) {
             System.out.println("Error: invalid command");
             help();
             return;
         }
-
         String cmd = arguments[0];
-
         switch (cmd.toLowerCase()) {
             case "help" -> help();
             case "register" -> System.out.println("register(arguments)");
             case "login" -> System.out.println("login(arguments)");
             case "exit" -> state = State.QUIT;
         }
-
     }
 
     private void help() {
