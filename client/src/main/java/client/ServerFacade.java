@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.*;
+import java.util.Map;
 
 public class ServerFacade {
     private static final HttpClient httpClient = HttpClient.newHttpClient();
@@ -28,12 +29,12 @@ public class ServerFacade {
 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200) {
-                System.out.println("Registration Successful!" + response.body());
+                System.out.println("Registration Successful!");
+            } else {
+                System.out.println(new Gson().fromJson(response.body(), Map.class).get("message"));
             }
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException | IOException | InterruptedException e) {
             System.out.println("Error: Couldn't connect to server");
-        } catch (IOException | InterruptedException e) {
-            System.out.println("Error: bad request");
         }
     }
 
