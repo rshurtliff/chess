@@ -2,7 +2,6 @@ package ui;
 
 import client.ServerFacade;
 
-import java.util.Arrays;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.RESET_TEXT_COLOR;
@@ -34,7 +33,7 @@ public class Repl {
             if (state == State.SIGNED_OUT) {
                 handePreLogin(input);
             } else {
-                //handlePostLogin(input);
+                handlePostLogin(input);
             }
         }
         scanner.close();
@@ -56,14 +55,27 @@ public class Repl {
         }
     }
 
+    private void handlePostLogin(String input){
+        //post login here
+    }
+
     private void help() {
         if (state.equals(State.SIGNED_OUT)) {
             System.out.println(SET_TEXT_COLOR_RED + "register <USERNAME> <PASSWORD> <EMAIL> - to create an account");
             System.out.println("login <USERNAME> <PASSWORD> - to play chess");
             System.out.println("exit - to stop the program");
-            System.out.println("help - to list possible commands\n" + RESET_TEXT_COLOR);
+            System.out.println("help - with possible commands\n" + RESET_TEXT_COLOR);
         } else {
-            //signedin help here
+             System.out.print(SET_TEXT_COLOR_RED +
+                    """
+                    create <NAME> - a game
+                    list - games
+                    join <ID> - a game
+                    logout - when you are done
+                    quit - playing chess
+                    help - with possible commands
+                    """
+            + RESET_TEXT_COLOR);
         }
     }
 
@@ -78,8 +90,17 @@ public class Repl {
         if (cmd.equalsIgnoreCase("login")) {
             return arguments.length == 3;
         }
-        return cmd.equalsIgnoreCase("help") || cmd.equalsIgnoreCase("exit");
-
+        if (cmd.equalsIgnoreCase("create")) {
+            return arguments.length == 2;
+        }
+        if (cmd.equalsIgnoreCase("join")) {
+            return arguments.length == 3;
+        }
+        if (cmd.equalsIgnoreCase("observe")) {
+            return arguments.length == 2;
+        }
+        return cmd.equalsIgnoreCase("help") || cmd.equalsIgnoreCase("exit") ||
+                cmd.equalsIgnoreCase("list") || cmd.equalsIgnoreCase("logout");
     }
 }
 
