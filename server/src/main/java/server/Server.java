@@ -7,6 +7,7 @@ import dataaccess.sql.DatabaseDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.GameData;
+import model.LoginRequest;
 import model.RegisterRequest;
 import service.*;
 
@@ -88,7 +89,7 @@ public class Server {
 
         } catch (NotAuthorizedException e) {
             ctx.status(401);
-            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: unauthorized")));
+            ctx.result(SERIALIZER.toJson(Map.of("message", "Error: wrong username / password")));
         } catch (DataAccessException e) {
             ctx.status(500);
             ctx.result(SERIALIZER.toJson(Map.of("message", "Error: Internal Server Error")));

@@ -1,6 +1,7 @@
 package client;
 
 import com.google.gson.Gson;
+import model.LoginRequest;
 import model.RegisterRequest;
 
 import java.io.IOException;
@@ -33,14 +34,29 @@ public class ServerFacade {
             } else {
                 throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
             }
-
         } catch (URISyntaxException | IOException | InterruptedException e) {
             System.out.println("Error: Couldn't connect to server");
         }
     }
 
-    public void login(String username, String password) {
-
+    public void login(String username, String password) throws ResponseException {
+        String json = new Gson().toJson(new LoginRequest(username, password));
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(url + "/session"))
+                    .timeout(java.time.Duration.ofMillis(5000))
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                authToken = new Gson().fromJson(response.body(), Map.class).get("authToken").toString();
+            } else {
+                throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
+            }
+        } catch (URISyntaxException | IOException | InterruptedException e) {
+            System.out.println("Error: Couldn't connect to server");
+        }
     }
-
 }
+
+

@@ -51,19 +51,30 @@ public class Repl {
         switch (cmd.toLowerCase()) {
             case "help" -> help();
             case "register" -> handleRegister(arguments);
-            case "login" -> System.out.println("login(arguments)");
+            case "login" -> handleLogin(arguments);
             case "exit" -> state = State.QUIT;
         }
     }
 
     private void handlePostLogin(String input) {
         //post login here
+        System.out.println("You're logged in now");
     }
 
     private void handleRegister(String[] arguments) {
         try {
             serverFacade.register(arguments[1], arguments[2], arguments[3]);
             System.out.println("Registration Successful!");
+            state = State.SIGNED_IN;
+        } catch (ResponseException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void handleLogin(String[] arguments) {
+        try {
+            serverFacade.login(arguments[1], arguments[2]);
+            System.out.println("Successfully Logged In!");
             state = State.SIGNED_IN;
         } catch (ResponseException e) {
             System.out.println(e.getMessage());
