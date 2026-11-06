@@ -1,5 +1,6 @@
 package ui;
 
+import client.ResponseException;
 import client.ServerFacade;
 
 import java.util.Scanner;
@@ -49,7 +50,7 @@ public class Repl {
         String cmd = arguments[0];
         switch (cmd.toLowerCase()) {
             case "help" -> help();
-            case "register" -> serverFacade.register(arguments[1], arguments[2], arguments[3]);
+            case "register" -> handleRegister(arguments);
             case "login" -> System.out.println("login(arguments)");
             case "exit" -> state = State.QUIT;
         }
@@ -57,6 +58,16 @@ public class Repl {
 
     private void handlePostLogin(String input) {
         //post login here
+    }
+
+    private void handleRegister(String[] arguments) {
+        try {
+            serverFacade.register(arguments[1], arguments[2], arguments[3]);
+            System.out.println("Registration Successful!");
+            state = State.SIGNED_IN;
+        } catch (ResponseException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void help() {
