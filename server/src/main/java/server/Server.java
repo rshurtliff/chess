@@ -7,6 +7,7 @@ import dataaccess.sql.DatabaseDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.GameData;
+import model.RegisterRequest;
 import service.*;
 
 import java.util.Collection;

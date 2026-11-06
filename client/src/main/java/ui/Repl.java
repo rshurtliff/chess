@@ -49,13 +49,13 @@ public class Repl {
         String cmd = arguments[0];
         switch (cmd.toLowerCase()) {
             case "help" -> help();
-            case "register" -> System.out.println("register(arguments)");
+            case "register" -> serverFacade.register(arguments[1], arguments[2], arguments[3]);
             case "login" -> System.out.println("login(arguments)");
             case "exit" -> state = State.QUIT;
         }
     }
 
-    private void handlePostLogin(String input){
+    private void handlePostLogin(String input) {
         //post login here
     }
 
@@ -66,16 +66,16 @@ public class Repl {
             System.out.println("exit - to stop the program");
             System.out.println("help - with possible commands\n" + RESET_TEXT_COLOR);
         } else {
-             System.out.print(SET_TEXT_COLOR_RED +
+            System.out.print(SET_TEXT_COLOR_RED +
                     """
-                    create <NAME> - a game
-                    list - games
-                    join <ID> - a game
-                    logout - when you are done
-                    quit - playing chess
-                    help - with possible commands
-                    """
-            + RESET_TEXT_COLOR);
+                            create <NAME> - a game
+                            list - games
+                            join <ID> - a game
+                            logout - when you are done
+                            quit - playing chess
+                            help - with possible commands
+                            """
+                    + RESET_TEXT_COLOR);
         }
     }
 

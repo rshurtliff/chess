@@ -3,10 +3,8 @@ package service;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
+import model.RegisterRequest;
 import org.junit.jupiter.api.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 
 
 public class ServiceUnitTests {
