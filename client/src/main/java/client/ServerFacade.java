@@ -19,6 +19,25 @@ public class ServerFacade {
         url = "http://localhost:" + port;
     }
 
+    public void logout() throws ResponseException {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(url + "/session"))
+                    .timeout(java.time.Duration.ofMillis(5000))
+                    .DELETE()
+                    .header("authorization", authToken)
+                    .build();
+            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                authToken = null;
+            } else {
+                throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
+            }
+        } catch (InterruptedException | URISyntaxException | IOException e) {
+            System.out.println("Error: Couldn't connect to to server");
+        }
+    }
+
 
     public void register(String username, String password, String email) throws ResponseException {
         String json = new Gson().toJson(new RegisterRequest(username, password, email));

@@ -4,6 +4,7 @@ import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import model.LoginRequest;
+import model.LogoutRequest;
 import model.RegisterRequest;
 import org.junit.jupiter.api.*;
 

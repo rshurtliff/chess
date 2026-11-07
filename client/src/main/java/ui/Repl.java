@@ -2,7 +2,9 @@ package ui;
 
 import client.ResponseException;
 import client.ServerFacade;
+import org.glassfish.grizzly.http.server.Response;
 
+import java.util.Locale;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.RESET_TEXT_COLOR;
@@ -22,7 +24,8 @@ public class Repl {
     }
 
     public void run() {
-        System.out.println("Welcome to chess for CS 240. Type " + SET_TEXT_COLOR_RED + "help" + RESET_TEXT_COLOR + " to get started");
+        System.out.println("Welcome to chess for CS 240. Type " + SET_TEXT_COLOR_RED + "help" +
+                RESET_TEXT_COLOR + " to get started");
         Scanner scanner = new Scanner(System.in);
 
         while (!state.equals(State.QUIT)) {
@@ -50,18 +53,52 @@ public class Repl {
         String cmd = arguments[0];
         switch (cmd.toLowerCase()) {
             case "help" -> help();
-            case "register" -> handleRegister(arguments);
-            case "login" -> handleLogin(arguments);
+            case "register" -> registerHandler(arguments);
+            case "login" -> loginHandler(arguments);
             case "exit" -> state = State.QUIT;
         }
     }
 
     private void handlePostLogin(String input) {
         //post login here
-        System.out.println("You're logged in now");
+        String[] arguments = input.trim().split("\\s+");
+        if (!validateArguments(arguments)) {
+            System.out.println("Error: invalid command");
+            help();
+            return;
+        }
+        String cmd = arguments[0];
+        switch (cmd.toLowerCase()) {
+            case "help" -> help();
+            case "list" -> listHandler();
+            case "join" -> joinHandler(arguments);
+            case "observe" -> observerHandler(arguments);
+            case "logout" -> logoutHandler();
+            case "quit" -> state = State.QUIT;
+        }
+
     }
 
-    private void handleRegister(String[] arguments) {
+    private void logoutHandler() {
+        try {
+            serverFacade.logout();
+            System.out.println("Successfully logged out!");
+            state = State.SIGNED_OUT;
+        } catch (ResponseException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void observerHandler(String[] arguments) {
+    }
+
+    private void joinHandler(String[] arguments) {
+    }
+
+    private void listHandler() {
+    }
+
+    private void registerHandler(String[] arguments) {
         try {
             serverFacade.register(arguments[1], arguments[2], arguments[3]);
             System.out.println("Registration Successful!");
@@ -71,7 +108,7 @@ public class Repl {
         }
     }
 
-    private void handleLogin(String[] arguments) {
+    private void loginHandler(String[] arguments) {
         try {
             serverFacade.login(arguments[1], arguments[2]);
             System.out.println("Successfully Logged In!");
@@ -106,23 +143,31 @@ public class Repl {
             return false;
         }
         String cmd = arguments[0];
-        if (cmd.equalsIgnoreCase("register")) {
-            return arguments.length == 4;
+        if (state == State.SIGNED_OUT) {
+            if (cmd.equalsIgnoreCase("register")) {
+                return arguments.length == 4;
+            }
+            if (cmd.equalsIgnoreCase("login")) {
+                return arguments.length == 3;
+            }
+        } else if (state == State.SIGNED_IN) {
+            if (cmd.equalsIgnoreCase("create")) {
+                return arguments.length == 2;
+            }
+            if (cmd.equalsIgnoreCase("join")) {
+                return arguments.length == 3;
+            }
+            if (cmd.equalsIgnoreCase("observe")) {
+                return arguments.length == 2;
+            }
+            if (cmd.equalsIgnoreCase("list") || cmd.equalsIgnoreCase("logout")) {
+                return arguments.length == 1;
+            }
         }
-        if (cmd.equalsIgnoreCase("login")) {
-            return arguments.length == 3;
+        if (cmd.equalsIgnoreCase("help") || cmd.equalsIgnoreCase("exit")) {
+            return arguments.length == 1;
         }
-        if (cmd.equalsIgnoreCase("create")) {
-            return arguments.length == 2;
-        }
-        if (cmd.equalsIgnoreCase("join")) {
-            return arguments.length == 3;
-        }
-        if (cmd.equalsIgnoreCase("observe")) {
-            return arguments.length == 2;
-        }
-        return cmd.equalsIgnoreCase("help") || cmd.equalsIgnoreCase("exit") ||
-                cmd.equalsIgnoreCase("list") || cmd.equalsIgnoreCase("logout");
+        return false;
     }
 }
 

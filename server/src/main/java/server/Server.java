@@ -8,6 +8,7 @@ import io.javalin.*;
 import io.javalin.http.Context;
 import model.GameData;
 import model.LoginRequest;
+import model.LogoutRequest;
 import model.RegisterRequest;
 import service.*;
 
