@@ -70,6 +70,7 @@ public class Repl {
         String cmd = arguments[0];
         switch (cmd.toLowerCase()) {
             case "help" -> help();
+            case "create" -> createGameHandler(arguments);
             case "list" -> listHandler();
             case "join" -> joinHandler(arguments);
             case "observe" -> observerHandler(arguments);
@@ -77,6 +78,15 @@ public class Repl {
             case "quit" -> state = State.QUIT;
         }
 
+    }
+
+    private void createGameHandler(String[] arguments) {
+        try {
+            int gameID = serverFacade.createGame(arguments[1]);
+            System.out.println("Game successfully created! ID: " + gameID);
+        } catch (ResponseException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void logoutHandler() {

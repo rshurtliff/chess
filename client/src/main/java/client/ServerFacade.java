@@ -1,6 +1,7 @@
 package client;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import model.LoginRequest;
 import model.RegisterRequest;
 
@@ -17,6 +18,27 @@ public class ServerFacade {
 
     public ServerFacade(int port) {
         url = "http://localhost:" + port;
+    }
+
+
+    public int createGame(String gameName) throws ResponseException {
+        String json = new Gson().toJson(Map.of("gameName", gameName));
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(url + "/game"))
+                    .timeout(java.time.Duration.ofMillis(5000))
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .header("authorization", authToken)
+                    .build();
+            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println(response.body());
+            if (response.statusCode() != 200) {
+                throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
+            }
+            return new Gson().fromJson(response.body(), JsonObject.class).get("gameID").getAsInt();
+        } catch (InterruptedException | URISyntaxException | IOException e) {
+            throw new ResponseException("Error: Couldn't connect to to server");
+        }
     }
 
     public void logout() throws ResponseException {
