@@ -2,9 +2,9 @@ package ui;
 
 import client.ResponseException;
 import client.ServerFacade;
-import org.glassfish.grizzly.http.server.Response;
+import model.GameData;
 
-import java.util.Locale;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.RESET_TEXT_COLOR;
@@ -60,7 +60,6 @@ public class Repl {
     }
 
     private void handlePostLogin(String input) {
-        //post login here
         String[] arguments = input.trim().split("\\s+");
         if (!validateArguments(arguments)) {
             System.out.println("Error: invalid command");
@@ -106,6 +105,18 @@ public class Repl {
     }
 
     private void listHandler() {
+        try {
+            ArrayList<GameData> games = serverFacade.listGames();
+            for (int i = 1; i <= games.size(); i++) {
+                GameData game = games.get(i - 1);
+                var whtUser = (game.whiteUsername() == null) ? "None" : game.whiteUsername();
+                var blkUser = (game.blackUsername() == null) ? "None" : game.blackUsername();
+                System.out.println(i + ": " + game.gameName() + " | WHITE PLAYER: " + whtUser +
+                        " | BLACK PLAYER: " + blkUser);
+            }
+        } catch (ResponseException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void registerHandler(String[] arguments) {

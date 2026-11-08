@@ -2,6 +2,7 @@ package client;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import model.GameData;
 import model.LoginRequest;
 import model.RegisterRequest;
 
@@ -9,6 +10,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 public class ServerFacade {
@@ -20,6 +23,23 @@ public class ServerFacade {
         url = "http://localhost:" + port;
     }
 
+    public ArrayList<GameData> listGames() throws ResponseException {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(url + "/game"))
+                    .timeout(java.time.Duration.ofMillis(5000))
+                    .GET()
+                    .header("authorization", authToken)
+                    .build();
+            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
+            }
+            return new Gson().fromJson(response.body(), GamesList.class).games();
+        } catch (InterruptedException | URISyntaxException | IOException e) {
+            throw new ResponseException("Error: Couldn't connect to to server");
+        }
+    }
 
     public int createGame(String gameName) throws ResponseException {
         String json = new Gson().toJson(Map.of("gameName", gameName));
