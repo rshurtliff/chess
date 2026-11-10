@@ -23,6 +23,17 @@ public class ServerFacade {
         url = "http://localhost:" + port;
     }
 
+    public void clear() throws ResponseException {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(url + "/db"))
+                    .DELETE()
+                    .build();
+            HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (InterruptedException | URISyntaxException | IOException e) {
+            throw new ResponseException("Error: Couldn't connect to to server");
+        }
+    }
 
     public void joinGame(int gameID, String color) throws ResponseException {
         String json;
