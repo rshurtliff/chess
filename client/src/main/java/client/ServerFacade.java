@@ -12,11 +12,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Map;
 
 public class ServerFacade {
-    private static final HttpClient httpClient = HttpClient.newHttpClient();
+    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
     private final String url;
     private String authToken;
 
@@ -35,7 +34,7 @@ public class ServerFacade {
                     .PUT(HttpRequest.BodyPublishers.ofString(json))
                     .header("authorization", authToken)
                     .build();
-            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             // do something with the reponse now that you hit the server
             if (response.statusCode() != 200) {
                 throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
@@ -54,7 +53,7 @@ public class ServerFacade {
                     .GET()
                     .header("authorization", authToken)
                     .build();
-            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
                 throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
             }
@@ -73,7 +72,7 @@ public class ServerFacade {
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .header("authorization", authToken)
                     .build();
-            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             System.out.println(response.body());
             if (response.statusCode() != 200) {
                 throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
@@ -92,7 +91,7 @@ public class ServerFacade {
                     .DELETE()
                     .header("authorization", authToken)
                     .build();
-            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200) {
                 authToken = null;
             } else {
@@ -112,7 +111,7 @@ public class ServerFacade {
                     .timeout(java.time.Duration.ofMillis(5000))
                     .POST(HttpRequest.BodyPublishers.ofString(json)) //send a RegisterRequest
                     .build();
-            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200) {
                 authToken = new Gson().fromJson(response.body(), Map.class).get("authToken").toString();
             } else {
@@ -131,7 +130,7 @@ public class ServerFacade {
                     .timeout(java.time.Duration.ofMillis(5000))
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
-            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200) {
                 authToken = new Gson().fromJson(response.body(), Map.class).get("authToken").toString();
             } else {

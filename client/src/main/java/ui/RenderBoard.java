@@ -18,9 +18,7 @@ public class RenderBoard {
         for (int r = 8; r >= 1; r--) {
             System.out.print(" " + r + " ");
             for (int c = 1; c <= 8; c++) {
-                var color = (r + c) % 2 == 0 ? SET_BG_COLOR_BLACK : SET_BG_COLOR_WHITE;
-                ChessPiece piece = board.getPiece(new ChessPosition(r, c));
-                System.out.print(color + getEscapeSequence(piece) + RESET_BG_COLOR);
+                printSquare(r,c,board);
             }
             System.out.print(" " + r + " ");
             System.out.print("\n");
@@ -33,14 +31,18 @@ public class RenderBoard {
         for (int r = 1; r <= 8; r++) {
             System.out.print(" " + r + " ");
             for (int c = 8; c >= 1; c--) {
-                var color = (r + c) % 2 == 0 ? SET_BG_COLOR_BLACK : SET_BG_COLOR_WHITE;
-                ChessPiece piece = board.getPiece(new ChessPosition(r, c));
-                System.out.print(color + getEscapeSequence(piece) + RESET_BG_COLOR);
+                printSquare(r,c,board);
             }
             System.out.print(" " + r + " ");
             System.out.print("\n");
         }
         System.out.print(BLK_COL_LABEL);
+    }
+
+    private static void printSquare(int r, int c, ChessBoard board){
+        var color = (r + c) % 2 == 0 ? SET_BG_COLOR_BLACK : SET_BG_COLOR_WHITE;
+        ChessPiece piece = board.getPiece(new ChessPosition(r, c));
+        System.out.print(color + getEscapeSequence(piece) + RESET_BG_COLOR);
     }
 
     private static String getEscapeSequence(ChessPiece piece) {
