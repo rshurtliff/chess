@@ -84,7 +84,6 @@ public class ServerFacade {
                     .header("authorization", authToken)
                     .build();
             var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println(response.body());
             if (response.statusCode() != 200) {
                 throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
             }
@@ -150,6 +149,10 @@ public class ServerFacade {
         } catch (URISyntaxException | IOException | InterruptedException e) {
             System.out.println("Error: Couldn't connect to server");
         }
+    }
+
+    public String getAuthToken() {
+        return authToken;
     }
 }
 
