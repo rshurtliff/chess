@@ -3,6 +3,7 @@ package client;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import model.GameData;
+import model.JoinGameRequest;
 import model.LoginRequest;
 import model.RegisterRequest;
 
@@ -21,6 +22,28 @@ public class ServerFacade {
 
     public ServerFacade(int port) {
         url = "http://localhost:" + port;
+    }
+
+
+    public void joinGame(int gameID, String color) throws ResponseException {
+        String json;
+        json = new Gson().toJson(new JoinGameRequest(color, gameID));
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(url + "/game"))
+                    .timeout(java.time.Duration.ofMillis(5000))
+                    .PUT(HttpRequest.BodyPublishers.ofString(json))
+                    .header("authorization", authToken)
+                    .build();
+            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // do something with the reponse now that you hit the server
+            if (response.statusCode() != 200) {
+                throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
+            }
+        } catch (InterruptedException | URISyntaxException | IOException e) {
+            throw new ResponseException("Error: Couldn't connect to to server");
+        }
+
     }
 
     public ArrayList<GameData> listGames() throws ResponseException {

@@ -1,8 +1,10 @@
 package ui;
 
+import chess.ChessGame;
 import client.ResponseException;
 import client.ServerFacade;
 import model.GameData;
+import org.glassfish.grizzly.http.server.Response;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -99,9 +101,47 @@ public class Repl {
     }
 
     private void observerHandler(String[] arguments) {
+        int gameID;
+        try {
+            gameID = Integer.parseInt(arguments[1]);
+        } catch (NumberFormatException e) {
+            System.out.println("Error: GameID must be an integer");
+            return;
+        }
+        try {
+            var games = serverFacade.listGames();
+            RenderBoard.printBoardForWhite(games.get(gameID - 1).game().getBoard());
+        } catch (ResponseException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void joinHandler(String[] arguments) {
+        int gameID;
+        String playerColor;
+        try {
+            gameID = Integer.parseInt(arguments[1]);
+            playerColor = arguments[2].toUpperCase();
+
+        } catch (NumberFormatException e) {
+            System.out.println("Error: GameID must be an integer");
+            return;
+        }
+
+        try {
+            serverFacade.joinGame(gameID, playerColor);
+            System.out.println("Successfully joined game " + gameID + " as " + playerColor);
+            var games = serverFacade.listGames();
+            var board = games.get(gameID - 1).game().getBoard();
+            if (arguments[2].equalsIgnoreCase("black")) {
+                RenderBoard.printBoardForBlack(board);
+            } else {
+                RenderBoard.printBoardForWhite(board);
+            }
+        } catch (ResponseException e) {
+            System.out.println(e.getMessage());
+
+        }
     }
 
     private void listHandler() {
@@ -150,7 +190,8 @@ public class Repl {
                     """
                             create <NAME> - a game
                             list - games
-                            join <ID> - a game
+                            join <ID> <WHITE | BLACK> - a game
+                            observe <ID> - a game;
                             logout - when you are done
                             quit - playing chess
                             help - with possible commands

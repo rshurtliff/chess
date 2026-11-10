@@ -6,10 +6,7 @@ import dataaccess.DataAccessException;
 import dataaccess.sql.DatabaseDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
-import model.GameData;
-import model.LoginRequest;
-import model.LogoutRequest;
-import model.RegisterRequest;
+import model.*;
 import service.*;
 
 import java.util.Collection;

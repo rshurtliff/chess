@@ -3,6 +3,7 @@ package service;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
+import model.JoinGameRequest;
 import model.LoginRequest;
 import model.LogoutRequest;
 import model.RegisterRequest;
