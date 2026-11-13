@@ -1,18 +1,167 @@
 package ui;
 
+import client.ResponseException;
+import client.ServerFacade;
+import model.GameData;
+
+import java.util.ArrayList;
+
+import static ui.EscapeSequences.RESET_TEXT_COLOR;
+import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
+
 public class LoggedInClient implements Client {
+    private final ServerFacade serverFacade;
+    private Repl.State nextState;
+
+    public LoggedInClient(ServerFacade serverFacade) {
+        this.serverFacade = serverFacade;
+        nextState = Repl.State.SIGNED_IN;
+    }
+
     @Override
     public String help() {
-        return "";
+        return (SET_TEXT_COLOR_RED +
+                """
+                            create <NAME> - a game
+                            list - games
+                            join <ID> <WHITE | BLACK> - a game
+                            observe <ID> - a game;
+                            logout - when you are done
+                            exit - playing chess
+                            help - with possible commands
+                        """
+                + RESET_TEXT_COLOR);
     }
 
     @Override
     public Repl.State nextState() {
-        return null;
+        return nextState;
     }
 
     @Override
     public String eval(String input) {
-        return "";
+        String[] arguments = input.trim().split("\\s+");
+        if (!validateArguments(arguments)) {
+            help();
+            return ("Error: invalid command\n" + help());
+        }
+        String cmd = arguments[0];
+        return switch (cmd.toLowerCase()) {
+            case "help" -> help();
+            case "create" -> createGameHandler(arguments);
+            case "list" -> listHandler();
+            case "join" -> joinHandler(arguments);
+            case "observe" -> observerHandler(arguments);
+            case "logout" -> logoutHandler();
+            case "exit" -> exitHandler();
+            default -> "Unknown Command!";
+        };
+    }
+
+    private boolean validateArguments(String[] arguments) {
+        if (arguments.length == 0) {
+            return false;
+        }
+        String cmd = arguments[0];
+        if (cmd.equalsIgnoreCase("create")) {
+            return arguments.length == 2;
+        }
+        if (cmd.equalsIgnoreCase("join")) {
+            return arguments.length == 3;
+        }
+        if (cmd.equalsIgnoreCase("observe")) {
+            return arguments.length == 2;
+        }
+        if (cmd.equalsIgnoreCase("list") || cmd.equalsIgnoreCase("logout")) {
+            return arguments.length == 1;
+        }
+        if (cmd.equalsIgnoreCase("help") || cmd.equalsIgnoreCase("exit")) {
+            return arguments.length == 1;
+        }
+        return false;
+    }
+
+    private String createGameHandler(String[] arguments) {
+        try {
+            int gameID = serverFacade.createGame(arguments[1]);
+            return ("Game successfully created! ID: " + gameID);
+        } catch (ResponseException e) {
+            return (e.getMessage());
+        }
+    }
+
+    private String listHandler() {
+        try {
+            ArrayList<GameData> games = serverFacade.listGames();
+            String gamesString = "";
+            for (int i = 1; i <= games.size(); i++) {
+                GameData game = games.get(i - 1);
+                var whtUser = (game.whiteUsername() == null) ? "None" : game.whiteUsername();
+                var blkUser = (game.blackUsername() == null) ? "None" : game.blackUsername();
+                gamesString += (i + ": " + game.gameName() + " | WHITE PLAYER: " + whtUser +
+                        " | BLACK PLAYER: " + blkUser + "\n");
+            }
+            return gamesString;
+        } catch (ResponseException e) {
+            return (e.getMessage());
+        }
+    }
+
+    private String joinHandler(String[] arguments) {
+        int gameID;
+        String playerColor;
+        try {
+            gameID = Integer.parseInt(arguments[1]);
+            playerColor = arguments[2].toUpperCase();
+
+        } catch (NumberFormatException e) {
+            return ("Error: GameID must be an integer");
+        }
+        try {
+            serverFacade.joinGame(gameID, playerColor);
+            var games = serverFacade.listGames();
+            var board = games.get(gameID - 1).game().getBoard();
+            String boardString;
+            if (arguments[2].equalsIgnoreCase("black")) {
+                boardString = RenderBoard.showBoardForBlack(board);
+            } else {
+                boardString = RenderBoard.showBoardForWhite(board);
+            }
+            nextState = Repl.State.PLAYING_GAME;
+            return ("Successfully joined game " + gameID + " as " + playerColor + "\n" + boardString);
+        } catch (ResponseException e) {
+            return (e.getMessage());
+        }
+    }
+
+    private String observerHandler(String[] arguments) {
+        int gameID;
+        try {
+            gameID = Integer.parseInt(arguments[1]);
+        } catch (NumberFormatException e) {
+            return ("Error: GameID must be an integer");
+        }
+        try {
+            var games = serverFacade.listGames();
+            nextState = Repl.State.OBSERVING;
+            return RenderBoard.showBoardForWhite(games.get(gameID - 1).game().getBoard());
+        } catch (ResponseException e) {
+            return (e.getMessage());
+        }
+    }
+
+    private String logoutHandler() {
+        try {
+            serverFacade.logout();
+            nextState = Repl.State.SIGNED_OUT;
+            return ("Successfully logged out!");
+        } catch (ResponseException e) {
+            return (e.getMessage());
+        }
+    }
+
+    private String exitHandler() {
+        nextState = Repl.State.QUIT;
+        return ("Goodbye");
     }
 }

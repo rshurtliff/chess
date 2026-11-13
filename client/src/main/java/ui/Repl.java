@@ -15,15 +15,17 @@ public class Repl {
     private State state;
     private final ServerFacade serverFacade;
     private final Client pregameClient;
+    private final Client loggedinClient;
 
     public Repl(ServerFacade serverFacade) {
         this.serverFacade = serverFacade;
         pregameClient = new PregameClient(serverFacade);
+        loggedinClient = new LoggedInClient(serverFacade);
         state = State.SIGNED_OUT;
     }
 
     public enum State {
-        SIGNED_IN, SIGNED_OUT, PLAYING_GAME, QUIT
+        SIGNED_IN, SIGNED_OUT, PLAYING_GAME, OBSERVING, QUIT
     }
 
     public void run() {
@@ -40,8 +42,11 @@ public class Repl {
             if (state.equals(State.SIGNED_OUT)) {
                 System.out.println(pregameClient.eval(input));
                 state = pregameClient.nextState();
+
             } else if (state.equals(State.SIGNED_IN)) {
-                handlePostLogin(input);
+                System.out.println(loggedinClient.eval(input));
+                state = loggedinClient.nextState();
+
             } else if (state.equals(State.PLAYING_GAME)) {
                 handleGamePlay(input);
             }
@@ -49,25 +54,6 @@ public class Repl {
         scanner.close();
     }
 
-
-    private void handlePostLogin(String input) {
-        String[] arguments = input.trim().split("\\s+");
-        if (!validateArguments(arguments)) {
-            System.out.println("Error: invalid command");
-            help();
-            return;
-        }
-        String cmd = arguments[0];
-        switch (cmd.toLowerCase()) {
-            case "help" -> help();
-            case "create" -> createGameHandler(arguments);
-            case "list" -> listHandler();
-            case "join" -> joinHandler(arguments);
-            case "observe" -> observerHandler(arguments);
-            case "logout" -> logoutHandler();
-            case "exit" -> state = State.QUIT;
-        }
-    }
 
     private void handleGamePlay(String input) {
         String[] arguments = input.trim().split("\\s+");
@@ -84,84 +70,6 @@ public class Repl {
     }
 
     private void moveHandler(String[] arguments) {
-    }
-
-    private void createGameHandler(String[] arguments) {
-        try {
-            int gameID = serverFacade.createGame(arguments[1]);
-            System.out.println("Game successfully created! ID: " + gameID);
-        } catch (ResponseException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private void logoutHandler() {
-        try {
-            serverFacade.logout();
-            System.out.println("Successfully logged out!");
-            state = State.SIGNED_OUT;
-        } catch (ResponseException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private void observerHandler(String[] arguments) {
-        int gameID;
-        try {
-            gameID = Integer.parseInt(arguments[1]);
-        } catch (NumberFormatException e) {
-            System.out.println("Error: GameID must be an integer");
-            return;
-        }
-        try {
-            var games = serverFacade.listGames();
-            RenderBoard.printBoardForWhite(games.get(gameID - 1).game().getBoard());
-        } catch (ResponseException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private void joinHandler(String[] arguments) {
-        int gameID;
-        String playerColor;
-        try {
-            gameID = Integer.parseInt(arguments[1]);
-            playerColor = arguments[2].toUpperCase();
-
-        } catch (NumberFormatException e) {
-            System.out.println("Error: GameID must be an integer");
-            return;
-        }
-        try {
-            serverFacade.joinGame(gameID, playerColor);
-            System.out.println("Successfully joined game " + gameID + " as " + playerColor);
-            var games = serverFacade.listGames();
-            var board = games.get(gameID - 1).game().getBoard();
-            if (arguments[2].equalsIgnoreCase("black")) {
-                RenderBoard.printBoardForBlack(board);
-            } else {
-                RenderBoard.printBoardForWhite(board);
-            }
-            state = State.PLAYING_GAME;
-        } catch (ResponseException e) {
-            System.out.println(e.getMessage());
-
-        }
-    }
-
-    private void listHandler() {
-        try {
-            ArrayList<GameData> games = serverFacade.listGames();
-            for (int i = 1; i <= games.size(); i++) {
-                GameData game = games.get(i - 1);
-                var whtUser = (game.whiteUsername() == null) ? "None" : game.whiteUsername();
-                var blkUser = (game.blackUsername() == null) ? "None" : game.blackUsername();
-                System.out.println(i + ": " + game.gameName() + " | WHITE PLAYER: " + whtUser +
-                        " | BLACK PLAYER: " + blkUser);
-            }
-        } catch (ResponseException e) {
-            System.out.println(e.getMessage());
-        }
     }
 
     private void help() {

@@ -13,36 +13,34 @@ public class RenderBoard {
     private static final String WHT_COL_LABEL = "    a  b  c  d  e  f  g  h \n";
     private static final String BLK_COL_LABEL = "    h  g  f  e  d  c  b  a \n";
 
-    public static void printBoardForWhite(ChessBoard board) {
-        System.out.print(WHT_COL_LABEL);
+    public static String showBoardForWhite(ChessBoard board) {
+        String boardString = WHT_COL_LABEL;
         for (int r = 8; r >= 1; r--) {
-            System.out.print(" " + r + " ");
+            boardString += (" " + r + " ");
             for (int c = 1; c <= 8; c++) {
-                printSquare(r,c,board);
+                boardString += printSquare(r, c, board);
             }
-            System.out.print(" " + r + " ");
-            System.out.print("\n");
+            boardString += (" " + r + " \n");
         }
-        System.out.print(WHT_COL_LABEL);
+        return boardString += WHT_COL_LABEL;
     }
 
-    public static void printBoardForBlack(ChessBoard board) {
-        System.out.print(BLK_COL_LABEL);
+    public static String showBoardForBlack(ChessBoard board) {
+        String boardString = BLK_COL_LABEL;
         for (int r = 1; r <= 8; r++) {
-            System.out.print(" " + r + " ");
+            boardString += (" " + r + " ");
             for (int c = 8; c >= 1; c--) {
-                printSquare(r,c,board);
+                boardString += printSquare(r, c, board);
             }
-            System.out.print(" " + r + " ");
-            System.out.print("\n");
+            boardString += (" " + r + " \n");
         }
-        System.out.print(BLK_COL_LABEL);
+        return boardString += BLK_COL_LABEL;
     }
 
-    private static void printSquare(int r, int c, ChessBoard board){
+    private static String printSquare(int r, int c, ChessBoard board) {
         var color = (r + c) % 2 == 0 ? SET_BG_COLOR_BLACK : SET_BG_COLOR_WHITE;
         ChessPiece piece = board.getPiece(new ChessPosition(r, c));
-        System.out.print(color + getEscapeSequence(piece) + RESET_BG_COLOR);
+        return (color + getEscapeSequence(piece) + RESET_BG_COLOR);
     }
 
     private static String getEscapeSequence(ChessPiece piece) {
