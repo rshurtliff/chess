@@ -1,6 +1,6 @@
-package client;
+package ui;
 
-import ui.Repl;
+import client.ServerFacade;
 
 public class ClientMain {
     private static final int PORT = 8080;

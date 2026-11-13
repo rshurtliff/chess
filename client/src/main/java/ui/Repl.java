@@ -1,10 +1,8 @@
 package ui;
 
-import chess.ChessGame;
 import client.ResponseException;
 import client.ServerFacade;
 import model.GameData;
-import org.glassfish.grizzly.http.server.Response;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -16,9 +14,11 @@ import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 public class Repl {
     private State state;
     private final ServerFacade serverFacade;
+    private final Client pregameClient;
 
     public Repl(ServerFacade serverFacade) {
         this.serverFacade = serverFacade;
+        pregameClient = new PregameClient(serverFacade);
         state = State.SIGNED_OUT;
     }
 
@@ -38,7 +38,8 @@ public class Repl {
             String input = scanner.nextLine();
 
             if (state.equals(State.SIGNED_OUT)) {
-                handePreLogin(input);
+                System.out.println(pregameClient.eval(input));
+                state = pregameClient.nextState();
             } else if (state.equals(State.SIGNED_IN)) {
                 handlePostLogin(input);
             } else if (state.equals(State.PLAYING_GAME)) {
@@ -48,21 +49,6 @@ public class Repl {
         scanner.close();
     }
 
-    private void handePreLogin(String input) {
-        String[] arguments = input.trim().split("\\s+");
-        if (!validateArguments(arguments)) {
-            System.out.println("Error: invalid command");
-            help();
-            return;
-        }
-        String cmd = arguments[0];
-        switch (cmd.toLowerCase()) {
-            case "help" -> help();
-            case "register" -> registerHandler(arguments);
-            case "login" -> loginHandler(arguments);
-            case "exit" -> state = State.QUIT;
-        }
-    }
 
     private void handlePostLogin(String input) {
         String[] arguments = input.trim().split("\\s+");
@@ -173,26 +159,6 @@ public class Repl {
                 System.out.println(i + ": " + game.gameName() + " | WHITE PLAYER: " + whtUser +
                         " | BLACK PLAYER: " + blkUser);
             }
-        } catch (ResponseException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private void registerHandler(String[] arguments) {
-        try {
-            serverFacade.register(arguments[1], arguments[2], arguments[3]);
-            System.out.println("Registration Successful!");
-            state = State.SIGNED_IN;
-        } catch (ResponseException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private void loginHandler(String[] arguments) {
-        try {
-            serverFacade.login(arguments[1], arguments[2]);
-            System.out.println("Successfully Logged In!");
-            state = State.SIGNED_IN;
         } catch (ResponseException e) {
             System.out.println(e.getMessage());
         }
