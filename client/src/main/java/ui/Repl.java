@@ -8,13 +8,14 @@ import org.glassfish.grizzly.http.server.Response;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Set;
 
 import static ui.EscapeSequences.RESET_TEXT_COLOR;
 import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 
 public class Repl {
     private State state;
-    private ServerFacade serverFacade;
+    private final ServerFacade serverFacade;
 
     public Repl(ServerFacade serverFacade) {
         this.serverFacade = serverFacade;
@@ -22,7 +23,7 @@ public class Repl {
     }
 
     public enum State {
-        SIGNED_IN, SIGNED_OUT, QUIT
+        SIGNED_IN, SIGNED_OUT, PLAYING_GAME, QUIT
     }
 
     public void run() {
@@ -36,10 +37,12 @@ public class Repl {
             }
             String input = scanner.nextLine();
 
-            if (state == State.SIGNED_OUT) {
+            if (state.equals(State.SIGNED_OUT)) {
                 handePreLogin(input);
-            } else {
+            } else if (state.equals(State.SIGNED_IN)) {
                 handlePostLogin(input);
+            } else if (state.equals(State.PLAYING_GAME)) {
+                handleGamePlay(input);
             }
         }
         scanner.close();
@@ -76,9 +79,25 @@ public class Repl {
             case "join" -> joinHandler(arguments);
             case "observe" -> observerHandler(arguments);
             case "logout" -> logoutHandler();
-            case "quit" -> state = State.QUIT;
+            case "exit" -> state = State.QUIT;
         }
+    }
 
+    private void handleGamePlay(String input) {
+        String[] arguments = input.trim().split("\\s+");
+        if (!validateArguments(arguments)) {
+            System.out.println("Error: invalid command");
+            help();
+            return;
+        }
+        String cmd = arguments[0];
+        switch (cmd.toLowerCase()) {
+            case "move" -> moveHandler(arguments);
+            case "help" -> help();
+        }
+    }
+
+    private void moveHandler(String[] arguments) {
     }
 
     private void createGameHandler(String[] arguments) {
@@ -127,7 +146,6 @@ public class Repl {
             System.out.println("Error: GameID must be an integer");
             return;
         }
-
         try {
             serverFacade.joinGame(gameID, playerColor);
             System.out.println("Successfully joined game " + gameID + " as " + playerColor);
@@ -138,6 +156,7 @@ public class Repl {
             } else {
                 RenderBoard.printBoardForWhite(board);
             }
+            state = State.PLAYING_GAME;
         } catch (ResponseException e) {
             System.out.println(e.getMessage());
 
@@ -181,11 +200,16 @@ public class Repl {
 
     private void help() {
         if (state.equals(State.SIGNED_OUT)) {
-            System.out.println(SET_TEXT_COLOR_RED + "register <USERNAME> <PASSWORD> <EMAIL> - to create an account");
-            System.out.println("login <USERNAME> <PASSWORD> - to play chess");
-            System.out.println("exit - to stop the program");
-            System.out.println("help - with possible commands\n" + RESET_TEXT_COLOR);
-        } else {
+            System.out.println(SET_TEXT_COLOR_RED +
+                    """
+                            register <USERNAME> <PASSWORD> <EMAIL> - to create an account
+                            login <USERNAME> <PASSWORD> - to play chess
+                            exit - to stop the program
+                            help - with possible commands
+                            
+                            """
+                    + RESET_TEXT_COLOR);
+        } else if (state.equals(State.SIGNED_IN)) {
             System.out.print(SET_TEXT_COLOR_RED +
                     """
                             create <NAME> - a game
@@ -193,10 +217,25 @@ public class Repl {
                             join <ID> <WHITE | BLACK> - a game
                             observe <ID> - a game;
                             logout - when you are done
-                            quit - playing chess
+                            exit - playing chess
                             help - with possible commands
+                            
                             """
                     + RESET_TEXT_COLOR);
+        } else if (state.equals(State.PLAYING_GAME)) {
+            System.out.print(SET_TEXT_COLOR_RED +
+                    """ 
+                            redraw - the chess board
+                            leave - the game
+                            move <START_POSITION> <END_POSITION> [Promotion_Piece] - i.e. "move A2 A3" or "move A7 A8 queen"
+                            resign - forfeit and end game
+                            highlight <PIECE_POSITION> - highlight legal moves for a piece
+                            exit - playing chess
+                            help - with possible commands
+                            
+                            """
+                    + RESET_TEXT_COLOR);
+
         }
     }
 
@@ -224,6 +263,39 @@ public class Repl {
             }
             if (cmd.equalsIgnoreCase("list") || cmd.equalsIgnoreCase("logout")) {
                 return arguments.length == 1;
+            }
+        } else if (state == State.PLAYING_GAME) {
+            if (cmd.equalsIgnoreCase("redraw")) {
+                return arguments.length == 1;
+            }
+            if (cmd.equalsIgnoreCase("leave")) {
+                return arguments.length == 1;
+            }
+            if (cmd.equalsIgnoreCase("move")) {
+                if (arguments.length == 3 && arguments[1].length() == 2 && arguments[2].length() == 2) {
+                    char startCol = Character.toLowerCase(arguments[1].charAt(0));
+                    char startRow = arguments[1].charAt(1);
+                    char endCol = Character.toLowerCase(arguments[2].charAt(0));
+                    char endRow = arguments[2].charAt(1);
+                    return (startCol >= 'a' && startCol <= 'h' && endCol >= 'a' && endCol <= 'h'
+                            && startRow >= '1' && startRow <= '8' && endRow >= '1' && endRow <= '8');
+                } else if (arguments.length == 4 && arguments[1].length() == 2 && arguments[2].length() == 2) {
+                    char startCol = Character.toLowerCase(arguments[1].charAt(0));
+                    char startRow = arguments[1].charAt(1);
+                    char endCol = Character.toLowerCase(arguments[2].charAt(0));
+                    char endRow = arguments[2].charAt(1);
+                    String promotionPiece = arguments[3].trim().toLowerCase();
+                    Set<String> validPromotions = Set.of("queen", "bishop", "rook", "knight");
+                    return (startCol >= 'a' && startCol <= 'h' && endCol >= 'a' && endCol <= 'h'
+                            && startRow >= '1' && startRow <= '8' && endRow >= '1' && endRow <= '8' && validPromotions.contains(promotionPiece));
+                }
+                return false;
+            }
+            if (cmd.equalsIgnoreCase("resign")) {
+                return arguments.length == 1;
+            }
+            if (cmd.equalsIgnoreCase("highlight")) {
+                return arguments.length == 2;
             }
         }
         if (cmd.equalsIgnoreCase("help") || cmd.equalsIgnoreCase("exit")) {
