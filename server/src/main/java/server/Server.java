@@ -25,7 +25,7 @@ public class Server {
             adminService = new AdminService(dataAccess);
             userService = new UserService(dataAccess);
         } catch (DataAccessException e) {
-            throw new RuntimeException("couldn't get conection to Database");
+            throw new RuntimeException("couldn't get connection to Database");
         }
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
