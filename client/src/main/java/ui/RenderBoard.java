@@ -64,9 +64,9 @@ public class RenderBoard {
             return EMPTY;
         }
         if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
-            return blackSymbolsMap.get(piece.getPieceType());
+            return SET_TEXT_COLOR_RED + blackSymbolsMap.get(piece.getPieceType()) + RESET_TEXT_COLOR;
         } else {
-            return whiteSymbolsMap.get(piece.getPieceType()).toUpperCase();
+            return SET_TEXT_COLOR_BLUE + whiteSymbolsMap.get(piece.getPieceType()).toUpperCase() + RESET_TEXT_COLOR;
         }
     }
 }
