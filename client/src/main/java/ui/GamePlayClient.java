@@ -54,6 +54,8 @@ public class GamePlayClient implements Client {
         return switch (cmd.toLowerCase()) {
             case "move" -> moveHandler(arguments);
             case "redraw" -> redraw();
+            case "leave" -> leave();
+            case "resign" -> resign();
             case "highlight" -> highlight(arguments);
             case "help" -> help();
             default -> "Unknown Command";
@@ -71,6 +73,17 @@ public class GamePlayClient implements Client {
         } else {
             return RenderBoard.showBoardForBlack(currentGame.gameData().game().getBoard(), null);
         }
+    }
+
+    private String leave() {
+        //this will be a websocket command too
+        nextState = Repl.State.SIGNED_IN;
+        return "NOT IMPLEMENTED";
+    }
+
+    private String resign() {
+        //make sure they really wanna resign - websocket
+        return "NOT IMPLEMENTED";
     }
 
     private String highlight(String[] arguments) {
