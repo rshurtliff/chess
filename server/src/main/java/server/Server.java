@@ -42,6 +42,7 @@ public class Server {
                 System.out.println("Websocket Connected");
             });
             ws.onMessage(ctx -> {
+                //this is where you'll parse the JSON and then handle it - you'll get a
                 ctx.send("Websocket response: " + ctx.message());
                 System.out.println(ctx.message());
             });
