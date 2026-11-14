@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessGame;
 import client.ResponseException;
 import client.ServerFacade;
 import model.GameData;
@@ -12,9 +13,9 @@ import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 public class LoggedInClient implements Client {
     private final ServerFacade serverFacade;
     private Repl.State nextState;
-    private GameData currentGame;
+    private GameplayData currentGame;
 
-    public LoggedInClient(ServerFacade serverFacade, GameData currentGame) {
+    public LoggedInClient(ServerFacade serverFacade, GameplayData currentGame) {
         this.serverFacade = serverFacade;
         nextState = Repl.State.SIGNED_IN;
         this.currentGame = currentGame;
@@ -130,7 +131,7 @@ public class LoggedInClient implements Client {
                 boardString = RenderBoard.showBoardForWhite(board);
             }
             nextState = Repl.State.PLAYING_GAME;
-            currentGame = games.get(gameID - 1);
+            currentGame = new GameplayData(games.get(gameID - 1), (playerColor.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK));
             return ("Successfully joined game " + gameID + " as " + playerColor + "\n" + boardString);
         } catch (ResponseException e) {
             return (e.getMessage());
@@ -147,7 +148,7 @@ public class LoggedInClient implements Client {
         try {
             var games = serverFacade.listGames();
             nextState = Repl.State.OBSERVING;
-            currentGame = lookupGame(gameID);
+            currentGame = new GameplayData(lookupGame(gameID), ChessGame.TeamColor.WHITE);
             return RenderBoard.showBoardForWhite(games.get(gameID - 1).game().getBoard());
         } catch (ResponseException e) {
             return (e.getMessage());
@@ -178,11 +179,11 @@ public class LoggedInClient implements Client {
         }
     }
 
-    public GameData getCurrentGame() {
+    public GameplayData getCurrentGame() {
         return currentGame;
     }
 
-    public void setCurrentGame(GameData gameData) {
+    public void setCurrentGame(GameplayData gameData) {
         currentGame = gameData;
     }
 

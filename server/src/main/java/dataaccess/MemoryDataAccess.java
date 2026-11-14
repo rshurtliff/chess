@@ -11,32 +11,34 @@ import java.util.Map;
 
 public class MemoryDataAccess implements DataAccess {
     private final Map<String, UserData> users = new HashMap<>();
-    private final  Map<String, AuthData> auths = new HashMap<>();
+    private final Map<String, AuthData> auths = new HashMap<>();
     private final Map<Integer, GameData> games = new HashMap<>();
     private int gameIDCounter = 1;
 
     @Override
-    public void clear(){
+    public void clear() {
         users.clear();
         auths.clear();
         games.clear();
     }
 
     @Override
-    public void register(UserData user, AuthData auth){
+    public void register(UserData user, AuthData auth) {
         users.put(user.username(), user);
         auths.put(auth.authToken(), auth);
     }
 
-    /**Finds the user
-     by username @returns a UserData object*/
+    /**
+     * Finds the user
+     * by username @returns a UserData object
+     */
     @Override
-    public UserData getUser(String username){
+    public UserData getUser(String username) {
         return users.get(username);
     }
 
     @Override
-    public void createAuth(AuthData auth){
+    public void createAuth(AuthData auth) {
         auths.put(auth.authToken(), auth);
     }
 
@@ -57,7 +59,7 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public int createGame(String gameName) {
-        games.put(gameIDCounter, new GameData(gameIDCounter,null,null,gameName,new ChessGame()));
+        games.put(gameIDCounter, new GameData(gameIDCounter, null, null, gameName, new ChessGame()));
         return gameIDCounter++;
     }
 
@@ -69,7 +71,7 @@ public class MemoryDataAccess implements DataAccess {
     @Override
     public void updateGame(GameData updatedGame) {
         int gameId = updatedGame.gameID();
-        games.replace(gameId,updatedGame);
+        games.replace(gameId, updatedGame);
     }
 
 

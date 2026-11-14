@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessGame;
 import client.ServerFacade;
 import model.GameData;
 
@@ -11,9 +12,9 @@ import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 public class GamePlayClient implements Client {
     private final ServerFacade serverFacade;
     private Repl.State nextState;
-    private GameData currentGame;
+    private GameplayData currentGame;
 
-    public GamePlayClient(ServerFacade serverFacade, GameData currentGame) {
+    public GamePlayClient(ServerFacade serverFacade, GameplayData currentGame) {
         this.serverFacade = serverFacade;
         nextState = Repl.State.PLAYING_GAME;
         this.currentGame = currentGame;
@@ -50,6 +51,7 @@ public class GamePlayClient implements Client {
         String cmd = arguments[0];
         return switch (cmd.toLowerCase()) {
             case "move" -> moveHandler(arguments);
+            case "redraw" -> redraw();
             case "help" -> help();
             default -> "Unknown Command";
         };
@@ -58,6 +60,14 @@ public class GamePlayClient implements Client {
     private String moveHandler(String[] arguments) {
         //do something here - this'll be websocket - you probably need to read the spec again.
         return "NOT IMPLEMENTED";
+    }
+
+    private String redraw() {
+        if (currentGame.pointOfView().equals(ChessGame.TeamColor.WHITE)) {
+            return RenderBoard.showBoardForWhite(currentGame.gameData().game().getBoard());
+        } else {
+            return RenderBoard.showBoardForBlack(currentGame.gameData().game().getBoard());
+        }
     }
 
     private boolean validateArguments(String[] arguments) {
@@ -103,11 +113,11 @@ public class GamePlayClient implements Client {
         return false;
     }
 
-    public GameData getCurrentGame() {
+    public GameplayData getCurrentGame() {
         return currentGame;
     }
 
-    public void setCurrentGame(GameData gameData) {
+    public void setCurrentGame(GameplayData gameData) {
         currentGame = gameData;
     }
 }
