@@ -126,7 +126,7 @@ public class LoggedInClient implements Client {
             var board = games.get(gameID - 1).game().getBoard();
             String boardString;
             if (arguments[2].equalsIgnoreCase("black")) {
-                boardString = RenderBoard.showBoardForBlack(board);
+                boardString = RenderBoard.showBoardForBlack(board, null);
             } else {
                 boardString = RenderBoard.showBoardForWhite(board);
             }

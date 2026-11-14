@@ -1,6 +1,7 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessPosition;
 import client.ServerFacade;
 import model.GameData;
 
@@ -52,6 +53,7 @@ public class GamePlayClient implements Client {
         return switch (cmd.toLowerCase()) {
             case "move" -> moveHandler(arguments);
             case "redraw" -> redraw();
+            case "highlight" -> highlight(arguments);
             case "help" -> help();
             default -> "Unknown Command";
         };
@@ -66,8 +68,24 @@ public class GamePlayClient implements Client {
         if (currentGame.pointOfView().equals(ChessGame.TeamColor.WHITE)) {
             return RenderBoard.showBoardForWhite(currentGame.gameData().game().getBoard());
         } else {
-            return RenderBoard.showBoardForBlack(currentGame.gameData().game().getBoard());
+            return RenderBoard.showBoardForBlack(currentGame.gameData().game().getBoard(), null);
         }
+    }
+
+    private String highlight(String[] arguments) {
+        var position = convertToPosition(arguments[1]);
+        var validMoves = currentGame.gameData().game().validMoves(position);
+        if (currentGame.pointOfView().equals(ChessGame.TeamColor.WHITE)) {
+            return RenderBoard.showBoardForWhite(currentGame.gameData().game().getBoard());
+        } else {
+            return RenderBoard.showBoardForBlack(currentGame.gameData().game().getBoard(), validMoves);
+        }
+    }
+
+    private ChessPosition convertToPosition(String stringPos) {
+        int col = Character.toLowerCase(stringPos.charAt(0)) - 'a' + 1;
+        int row = Character.toLowerCase(stringPos.charAt(1)) - '0';
+        return new ChessPosition(row, col);
     }
 
     private boolean validateArguments(String[] arguments) {
@@ -105,6 +123,7 @@ public class GamePlayClient implements Client {
             return arguments.length == 1;
         }
         if (cmd.equalsIgnoreCase("highlight")) {
+            //gotta make sure that the requested position is valid
             return arguments.length == 2;
         }
         if (cmd.equalsIgnoreCase("help") || cmd.equalsIgnoreCase("exit")) {

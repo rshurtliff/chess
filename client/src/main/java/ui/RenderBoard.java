@@ -1,10 +1,8 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
+import java.util.Collection;
 import java.util.Map;
 
 import static ui.EscapeSequences.*;
@@ -18,27 +16,35 @@ public class RenderBoard {
         for (int r = 8; r >= 1; r--) {
             boardString += (" " + r + " ");
             for (int c = 1; c <= 8; c++) {
-                boardString += printSquare(r, c, board);
+                boardString += printSquare(r, c, board, null);
             }
             boardString += (" " + r + " \n");
         }
         return boardString += WHT_COL_LABEL;
     }
 
-    public static String showBoardForBlack(ChessBoard board) {
+    public static String showBoardForBlack(ChessBoard board, Collection<ChessMove> validMoves) {
         String boardString = BLK_COL_LABEL;
         for (int r = 1; r <= 8; r++) {
             boardString += (" " + r + " ");
             for (int c = 8; c >= 1; c--) {
-                boardString += printSquare(r, c, board);
+                boardString += printSquare(r, c, board, validMoves);
             }
             boardString += (" " + r + " \n");
         }
         return boardString += BLK_COL_LABEL;
     }
 
-    private static String printSquare(int r, int c, ChessBoard board) {
+    private static String printSquare(int r, int c, ChessBoard board, Collection<ChessMove> validMoves) {
         var color = (r + c) % 2 == 0 ? SET_BG_COLOR_BLACK : SET_BG_COLOR_WHITE;
+        if (validMoves != null) {
+            for (ChessMove move : validMoves) {
+                if (move.getEndPosition().equals(new ChessPosition(r, c))) {
+                    color = SET_BG_COLOR_GREEN;
+                    break;
+                }
+            }
+        }
         ChessPiece piece = board.getPiece(new ChessPosition(r, c));
         return (color + getEscapeSequence(piece) + RESET_BG_COLOR);
     }
