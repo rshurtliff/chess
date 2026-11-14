@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPosition;
 import client.ServerFacade;
@@ -66,7 +67,7 @@ public class GamePlayClient implements Client {
 
     private String redraw() {
         if (currentGame.pointOfView().equals(ChessGame.TeamColor.WHITE)) {
-            return RenderBoard.showBoardForWhite(currentGame.gameData().game().getBoard());
+            return RenderBoard.showBoardForWhite(currentGame.gameData().game().getBoard(), null);
         } else {
             return RenderBoard.showBoardForBlack(currentGame.gameData().game().getBoard(), null);
         }
@@ -74,11 +75,15 @@ public class GamePlayClient implements Client {
 
     private String highlight(String[] arguments) {
         var position = convertToPosition(arguments[1]);
+        ChessBoard board = currentGame.gameData().game().getBoard();
+        if (board.getPiece(position) == null) {
+            return "Error: no piece at specified position!";
+        }
         var validMoves = currentGame.gameData().game().validMoves(position);
         if (currentGame.pointOfView().equals(ChessGame.TeamColor.WHITE)) {
-            return RenderBoard.showBoardForWhite(currentGame.gameData().game().getBoard());
+            return RenderBoard.showBoardForWhite(board, validMoves);
         } else {
-            return RenderBoard.showBoardForBlack(currentGame.gameData().game().getBoard(), validMoves);
+            return RenderBoard.showBoardForBlack(board, validMoves);
         }
     }
 
@@ -100,22 +105,23 @@ public class GamePlayClient implements Client {
             return arguments.length == 1;
         }
         if (cmd.equalsIgnoreCase("move")) {
-            if (arguments.length == 3 && arguments[1].length() == 2 && arguments[2].length() == 2) {
-                char startCol = Character.toLowerCase(arguments[1].charAt(0));
-                char startRow = arguments[1].charAt(1);
-                char endCol = Character.toLowerCase(arguments[2].charAt(0));
-                char endRow = arguments[2].charAt(1);
-                return (startCol >= 'a' && startCol <= 'h' && endCol >= 'a' && endCol <= 'h'
-                        && startRow >= '1' && startRow <= '8' && endRow >= '1' && endRow <= '8');
-            } else if (arguments.length == 4 && arguments[1].length() == 2 && arguments[2].length() == 2) {
-                char startCol = Character.toLowerCase(arguments[1].charAt(0));
-                char startRow = arguments[1].charAt(1);
-                char endCol = Character.toLowerCase(arguments[2].charAt(0));
-                char endRow = arguments[2].charAt(1);
+            if (arguments.length == 3) {
+                boolean isValid = validatePosition(arguments[1]) && validatePosition(arguments[2]);
+                if (!isValid) {
+                    System.out.println("Make sure moves are <START_POS> <END_POS> [PROMOTION]. " +
+                            "Only specify promotion for pawns moving to the last row. Ex: move a2 a3");
+                }
+                return isValid;
+            } else if (arguments.length == 4) {
+                boolean validPositions = validatePosition(arguments[1]) && validatePosition(arguments[2]);
                 String promotionPiece = arguments[3].trim().toLowerCase();
                 Set<String> validPromotions = Set.of("queen", "bishop", "rook", "knight");
-                return (startCol >= 'a' && startCol <= 'h' && endCol >= 'a' && endCol <= 'h'
-                        && startRow >= '1' && startRow <= '8' && endRow >= '1' && endRow <= '8' && validPromotions.contains(promotionPiece));
+                boolean isValid = validPositions && validPromotions.contains(promotionPiece);
+                if (!isValid) {
+                    System.out.println("Make sure moves are <START_POS> <END_POS> [PROMOTION]. " +
+                            "Only specify promotion for pawns moving to the last row. Ex: move a2 a3");
+                }
+                return isValid;
             }
             return false;
         }
@@ -130,6 +136,15 @@ public class GamePlayClient implements Client {
             return arguments.length == 1;
         }
         return false;
+    }
+
+    private boolean validatePosition(String posString) {
+        if (posString.length() != 2) {
+            return false;
+        }
+        char col = Character.toLowerCase(posString.charAt(0));
+        char row = posString.charAt(1);
+        return (col >= 'a' && col <= 'h' && row >= '1' && row <= '8');
     }
 
     public GameplayData getCurrentGame() {

@@ -11,12 +11,12 @@ public class RenderBoard {
     private static final String WHT_COL_LABEL = "    a  b  c  d  e  f  g  h \n";
     private static final String BLK_COL_LABEL = "    h  g  f  e  d  c  b  a \n";
 
-    public static String showBoardForWhite(ChessBoard board) {
+    public static String showBoardForWhite(ChessBoard board, Collection<ChessMove> validMoves) {
         String boardString = WHT_COL_LABEL;
         for (int r = 8; r >= 1; r--) {
             boardString += (" " + r + " ");
             for (int c = 1; c <= 8; c++) {
-                boardString += printSquare(r, c, board, null);
+                boardString += printSquare(r, c, board, validMoves);
             }
             boardString += (" " + r + " \n");
         }

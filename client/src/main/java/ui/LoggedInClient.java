@@ -128,7 +128,7 @@ public class LoggedInClient implements Client {
             if (arguments[2].equalsIgnoreCase("black")) {
                 boardString = RenderBoard.showBoardForBlack(board, null);
             } else {
-                boardString = RenderBoard.showBoardForWhite(board);
+                boardString = RenderBoard.showBoardForWhite(board, null);
             }
             nextState = Repl.State.PLAYING_GAME;
             currentGame = new GameplayData(games.get(gameID - 1), (playerColor.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK));
@@ -149,7 +149,7 @@ public class LoggedInClient implements Client {
             var games = serverFacade.listGames();
             nextState = Repl.State.OBSERVING;
             currentGame = new GameplayData(lookupGame(gameID), ChessGame.TeamColor.WHITE);
-            return RenderBoard.showBoardForWhite(games.get(gameID - 1).game().getBoard());
+            return RenderBoard.showBoardForWhite(games.get(gameID - 1).game().getBoard(), null);
         } catch (ResponseException e) {
             return (e.getMessage());
         }
