@@ -12,10 +12,12 @@ import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 public class LoggedInClient implements Client {
     private final ServerFacade serverFacade;
     private Repl.State nextState;
+    private GameData currentGame;
 
-    public LoggedInClient(ServerFacade serverFacade) {
+    public LoggedInClient(ServerFacade serverFacade, GameData currentGame) {
         this.serverFacade = serverFacade;
         nextState = Repl.State.SIGNED_IN;
+        this.currentGame = currentGame;
     }
 
     @Override
@@ -128,6 +130,7 @@ public class LoggedInClient implements Client {
                 boardString = RenderBoard.showBoardForWhite(board);
             }
             nextState = Repl.State.PLAYING_GAME;
+            currentGame = games.get(gameID - 1);
             return ("Successfully joined game " + gameID + " as " + playerColor + "\n" + boardString);
         } catch (ResponseException e) {
             return (e.getMessage());
@@ -144,6 +147,7 @@ public class LoggedInClient implements Client {
         try {
             var games = serverFacade.listGames();
             nextState = Repl.State.OBSERVING;
+            currentGame = lookupGame(gameID);
             return RenderBoard.showBoardForWhite(games.get(gameID - 1).game().getBoard());
         } catch (ResponseException e) {
             return (e.getMessage());
@@ -164,4 +168,22 @@ public class LoggedInClient implements Client {
         nextState = Repl.State.QUIT;
         return ("Goodbye");
     }
+
+    private GameData lookupGame(int gameID) {
+        try {
+            var games = serverFacade.listGames();
+            return games.get(gameID - 1);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public GameData getCurrentGame() {
+        return currentGame;
+    }
+
+    public void setCurrentGame(GameData gameData) {
+        currentGame = gameData;
+    }
+
 }

@@ -15,14 +15,15 @@ public class Repl {
     private State state;
     private final ServerFacade serverFacade;
     private final Client pregameClient;
-    private final Client loggedinClient;
-    private final Client gamePlayClient;
+    private final LoggedInClient loggedinClient;
+    private final GamePlayClient gamePlayClient;
 
     public Repl(ServerFacade serverFacade) {
         this.serverFacade = serverFacade;
         pregameClient = new PregameClient(serverFacade);
-        loggedinClient = new LoggedInClient(serverFacade);
-        gamePlayClient = new GamePlayClient(serverFacade);
+        loggedinClient = new LoggedInClient(serverFacade, null);
+        gamePlayClient = new GamePlayClient(serverFacade, null);
+
         state = State.SIGNED_OUT;
     }
 
@@ -48,10 +49,13 @@ public class Repl {
             } else if (state.equals(State.SIGNED_IN)) {
                 System.out.println(loggedinClient.eval(input));
                 state = loggedinClient.nextState();
+                gamePlayClient.setCurrentGame(loggedinClient.getCurrentGame());
+
 
             } else if (state.equals(State.PLAYING_GAME)) {
                 System.out.println(gamePlayClient.eval(input));
                 state = gamePlayClient.nextState();
+                loggedinClient.setCurrentGame((gamePlayClient.getCurrentGame()));
             }
         }
         scanner.close();

@@ -1,6 +1,7 @@
 package ui;
 
 import client.ServerFacade;
+import model.GameData;
 
 import java.util.Set;
 
@@ -10,10 +11,12 @@ import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 public class GamePlayClient implements Client {
     private final ServerFacade serverFacade;
     private Repl.State nextState;
+    private GameData currentGame;
 
-    public GamePlayClient(ServerFacade serverFacade) {
+    public GamePlayClient(ServerFacade serverFacade, GameData currentGame) {
         this.serverFacade = serverFacade;
         nextState = Repl.State.PLAYING_GAME;
+        this.currentGame = currentGame;
     }
 
     @Override
@@ -98,5 +101,13 @@ public class GamePlayClient implements Client {
             return arguments.length == 1;
         }
         return false;
+    }
+
+    public GameData getCurrentGame() {
+        return currentGame;
+    }
+
+    public void setCurrentGame(GameData gameData) {
+        currentGame = gameData;
     }
 }
