@@ -51,7 +51,6 @@ public class Repl {
                 state = loggedinClient.nextState();
                 gamePlayClient.setCurrentGame(loggedinClient.getCurrentGame());
 
-
             } else if (state.equals(State.PLAYING_GAME)) {
                 System.out.println(gamePlayClient.eval(input));
                 state = gamePlayClient.nextState();

@@ -35,6 +35,7 @@ public class GameplayService {
     }
 
     private ServerMessage makeMove(MakeMoveCommand command) {
+        //NOT SURE THESE ARE BEING SENT TO THE RIGHT PEOPLE --- NEED CONNECTION MANAGER
         try {
             GameData gameData = dataAccess.getGame(command.getGameID());
             ChessMove proposedMove = command.getMove();
@@ -46,19 +47,21 @@ public class GameplayService {
         } catch (DataAccessException e) {
             return new ErrorMessage("Error: " + e.getMessage());
         }
-        return "Board updated!";// this changes the board i think - double check that tho. then update database with the mutated board
     }
 
-    private String connect(UserGameCommand command) {
-        return "not implemented";
+    private ServerMessage connect(UserGameCommand command) {
+        return null;
+        // should probably add them to a HashMap or something to track connections
+        // then a ConnectionManager should probably notify the correct people based on what the command was.
+        // notifications should just be ctx.send(JSON of a ServerMessage) - that's either ERROR, NOTIFICATION, or LOAD GAME sub class of ServerMessage
     }
 
-    private String leave(UserGameCommand command) {
-        return "not implemented";
+    private ServerMessage leave(UserGameCommand command) {
+        return null;
     }
 
-    private String resign(UserGameCommand command) {
-        return "not implemented";
+    private ServerMessage resign(UserGameCommand command) {
+        return null;
     }
 
     private UserGameCommand parseCommandFromJson(String json) {

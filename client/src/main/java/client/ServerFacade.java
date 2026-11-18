@@ -9,6 +9,7 @@ import model.LoginRequest;
 import model.RegisterRequest;
 import ui.WebsocketCommunicator;
 import websocket.commands.MakeMoveCommand;
+import websocket.commands.UserGameCommand;
 
 import java.io.IOException;
 import java.net.URI;
@@ -168,8 +169,11 @@ public class ServerFacade {
     public void makeMove(int gameId, ChessMove proposedMove) throws Exception {
         MakeMoveCommand moveCommand = new MakeMoveCommand(authToken, gameId, proposedMove);
         ws.send(new Gson().toJson(moveCommand));
+    }
 
-
+    public void connect(int gameId) throws Exception {
+        UserGameCommand connectCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId);
+        ws.send(new Gson().toJson(connectCommand));
     }
 }
 

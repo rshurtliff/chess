@@ -122,6 +122,9 @@ public class LoggedInClient implements Client {
         }
         try {
             serverFacade.joinGame(gameID, playerColor);
+            serverFacade.connect(gameID);
+
+            //everythinbg from here to the next comment should be repladed by CONNECT / LOADGAME. the listener in websocket communicator should probably do this logic below
             var games = serverFacade.listGames();
             var board = games.get(gameID - 1).game().getBoard();
             String boardString;
@@ -130,10 +133,12 @@ public class LoggedInClient implements Client {
             } else {
                 boardString = RenderBoard.showBoardForWhite(board, null);
             }
+            // SEE ABOVE COMMENT
+
             nextState = Repl.State.PLAYING_GAME;
             currentGame = new GameplayData(games.get(gameID - 1), (playerColor.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK));
             return ("Successfully joined game " + gameID + " as " + playerColor + "\n" + boardString);
-        } catch (ResponseException e) {
+        } catch (Exception e) {
             return (e.getMessage());
         }
     }

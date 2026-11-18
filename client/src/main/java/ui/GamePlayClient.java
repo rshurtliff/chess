@@ -21,6 +21,7 @@ public class GamePlayClient implements Client {
         this.serverFacade = serverFacade;
         nextState = Repl.State.PLAYING_GAME;
         this.currentGame = currentGame;
+
     }
 
     @Override
