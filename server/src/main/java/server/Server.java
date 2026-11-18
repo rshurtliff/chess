@@ -9,6 +9,7 @@ import io.javalin.http.Context;
 import model.*;
 import service.*;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
 
 import java.util.Collection;
 import java.util.Map;
@@ -49,8 +50,8 @@ public class Server {
                 String json = ctx.message();
                 System.out.println("Message Received: " + ctx.message());
                 try {
-                    //the gameplayservice, execute the command. should probably send back a ServerMessage as JSON
-                    gameplayService.executeUserGameCommand(json);
+                    ServerMessage result = gameplayService.executeUserGameCommand(json);
+                    //who should it send the result to??
                 } catch (Exception e) {
                     // if it doens't work, this is where you send back the ERROR notificatoin ServerMessage as JSON
                     System.out.println("Exception: " + e);

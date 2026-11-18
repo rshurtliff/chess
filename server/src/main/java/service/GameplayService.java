@@ -6,8 +6,14 @@ import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.GameData;
+import server.Server;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.ServerMessage;
+
+import java.awt.dnd.InvalidDnDOperationException;
 
 public class GameplayService {
     private final DataAccess dataAccess;
@@ -17,7 +23,7 @@ public class GameplayService {
 
     }
 
-    public String executeUserGameCommand(String json) throws Exception {
+    public ServerMessage executeUserGameCommand(String json) throws Exception {
         UserGameCommand command = parseCommandFromJson(json);
         authenticate(command);
         return switch (command.getCommandType()) {
@@ -28,13 +34,18 @@ public class GameplayService {
         };
     }
 
-    private String makeMove(MakeMoveCommand command) throws DataAccessException, InvalidMoveException {
-        GameData gameData = dataAccess.getGame(command.getGameID());
-        ChessMove proposedMove = command.getMove();
-        gameData.game().makeMove(proposedMove);
-        dataAccess.updateGame(gameData);
-        System.out.println("board should be updated");
-        System.out.println(gameData.game().getBoard());
+    private ServerMessage makeMove(MakeMoveCommand command) {
+        try {
+            GameData gameData = dataAccess.getGame(command.getGameID());
+            ChessMove proposedMove = command.getMove();
+            gameData.game().makeMove(proposedMove);
+            dataAccess.updateGame(gameData);
+            return new LoadGameMessage(dataAccess.getGame(command.getGameID()));
+        } catch (InvalidMoveException e) {
+            return new ErrorMessage("Error: Invalid move! (Hint - make sure it's your turn!)");
+        } catch (DataAccessException e) {
+            return new ErrorMessage("Error: " + e.getMessage());
+        }
         return "Board updated!";// this changes the board i think - double check that tho. then update database with the mutated board
     }
 

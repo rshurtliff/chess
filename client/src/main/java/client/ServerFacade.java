@@ -1,11 +1,14 @@
 package client;
 
+import chess.ChessMove;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import model.GameData;
 import model.JoinGameRequest;
 import model.LoginRequest;
 import model.RegisterRequest;
+import ui.WebsocketCommunicator;
+import websocket.commands.MakeMoveCommand;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,9 +21,16 @@ public class ServerFacade {
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
     private final String url;
     private String authToken;
+    private WebsocketCommunicator ws;
+
 
     public ServerFacade(int port) {
         url = "http://localhost:" + port;
+        try {
+            ws = new WebsocketCommunicator(port);
+        } catch (Exception e) {
+            System.out.println("Error: couldn't connect to websocket");
+        }
     }
 
     public void clear() throws ResponseException {
@@ -108,7 +118,7 @@ public class ServerFacade {
                 throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
             }
         } catch (InterruptedException | URISyntaxException | IOException e) {
-            System.out.println("Error: Couldn't connect to to server");
+            throw new ResponseException("Error: Couldn't connect to to server");
         }
     }
 
@@ -128,7 +138,7 @@ public class ServerFacade {
                 throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
             }
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            System.out.println("Error: Couldn't connect to server");
+            throw new ResponseException("Error: Couldn't connect to server");
         }
     }
 
@@ -147,12 +157,19 @@ public class ServerFacade {
                 throw new ResponseException(new Gson().fromJson(response.body(), Map.class).get("message").toString());
             }
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            System.out.println("Error: Couldn't connect to server");
+            throw new ResponseException("Error: Couldn't connect to server");
         }
     }
 
     public String getAuthToken() {
         return authToken;
+    }
+
+    public void makeMove(int gameId, ChessMove proposedMove) throws Exception {
+        MakeMoveCommand moveCommand = new MakeMoveCommand(authToken, gameId, proposedMove);
+        ws.send(new Gson().toJson(moveCommand));
+
+
     }
 }
 

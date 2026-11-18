@@ -16,17 +16,11 @@ public class GamePlayClient implements Client {
     private final ServerFacade serverFacade;
     private Repl.State nextState;
     private GameplayData currentGame;
-    private WebsocketCommunicator ws;
 
     public GamePlayClient(ServerFacade serverFacade, GameplayData currentGame) {
         this.serverFacade = serverFacade;
         nextState = Repl.State.PLAYING_GAME;
         this.currentGame = currentGame;
-        try {
-            ws = new WebsocketCommunicator(8080);
-        } catch (Exception e) {
-            System.out.println("Error: couldn't connect to websocket");
-        }
     }
 
     @Override
@@ -70,14 +64,12 @@ public class GamePlayClient implements Client {
     }
 
     private String moveHandler(String[] arguments) {
-        //do something here - this'll be websocket - you probably need to read the spec again.
         ChessPiece.PieceType promotionType = arguments.length == 4 ? ChessPiece.PieceType.valueOf(arguments[3].toUpperCase()) : null;
         ChessMove proposedMove = new ChessMove(convertToPosition(arguments[1]), convertToPosition(arguments[2]), promotionType);
         int gameId = currentGame.gameData().gameID();
-        MakeMoveCommand moveCommand = new MakeMoveCommand(serverFacade.getAuthToken(), gameId, proposedMove);
         try {
-            ws.send(new Gson().toJson(moveCommand));
-            return "Move sent - this should change when you figure out what it'll return";
+            serverFacade.makeMove(gameId, proposedMove);
+            return "NOT SURE WHAT TO RETURN HERE, PROBABLY THE NEW BOARD AFTER THE MOVE RENDERED";
         } catch (Exception e) {
             return ("Error: " + e.getMessage());
         }
