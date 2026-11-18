@@ -1,10 +1,11 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPosition;
+import chess.*;
 import client.ServerFacade;
+import com.google.gson.Gson;
+import jakarta.websocket.WebSocketContainer;
 import model.GameData;
+import websocket.commands.MakeMoveCommand;
 
 import java.util.Set;
 
@@ -15,11 +16,17 @@ public class GamePlayClient implements Client {
     private final ServerFacade serverFacade;
     private Repl.State nextState;
     private GameplayData currentGame;
+    private WebsocketCommunicator ws;
 
     public GamePlayClient(ServerFacade serverFacade, GameplayData currentGame) {
         this.serverFacade = serverFacade;
         nextState = Repl.State.PLAYING_GAME;
         this.currentGame = currentGame;
+        try {
+            ws = new WebsocketCommunicator(8080);
+        } catch (Exception e) {
+            System.out.println("Error: couldn't connect to websocket");
+        }
     }
 
     @Override
@@ -64,7 +71,16 @@ public class GamePlayClient implements Client {
 
     private String moveHandler(String[] arguments) {
         //do something here - this'll be websocket - you probably need to read the spec again.
-        return "NOT IMPLEMENTED";
+        ChessPiece.PieceType promotionType = arguments.length == 4 ? ChessPiece.PieceType.valueOf(arguments[3].toUpperCase()) : null;
+        ChessMove proposedMove = new ChessMove(convertToPosition(arguments[1]), convertToPosition(arguments[2]), promotionType);
+        int gameId = currentGame.gameData().gameID();
+        MakeMoveCommand moveCommand = new MakeMoveCommand(serverFacade.getAuthToken(), gameId, proposedMove);
+        try {
+            ws.send(new Gson().toJson(moveCommand));
+            return "Move sent - this should change when you figure out what it'll return";
+        } catch (Exception e) {
+            return ("Error: " + e.getMessage());
+        }
     }
 
     private String redraw() {

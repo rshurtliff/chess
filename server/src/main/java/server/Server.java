@@ -8,6 +8,7 @@ import io.javalin.*;
 import io.javalin.http.Context;
 import model.*;
 import service.*;
+import websocket.commands.UserGameCommand;
 
 import java.util.Collection;
 import java.util.Map;
@@ -17,6 +18,7 @@ public class Server {
     private final Javalin javalin;
     private final AdminService adminService;
     private final UserService userService;
+    private final GameplayService gameplayService;
 
 
     public Server() {
@@ -24,6 +26,7 @@ public class Server {
             DataAccess dataAccess = new DatabaseDataAccess();
             adminService = new AdminService(dataAccess);
             userService = new UserService(dataAccess);
+            gameplayService = new GameplayService(dataAccess);
         } catch (DataAccessException e) {
             throw new RuntimeException("couldn't get connection to Database");
         }
@@ -42,7 +45,17 @@ public class Server {
                 System.out.println("Websocket Connected");
             });
             ws.onMessage(ctx -> {
-                //this is where you'll parse the JSON and then handle it - you'll get a
+                //get a UserGameCommand, handle it in GameplayService. If it's bad JSON, send back and ERROR notfication
+                String json = ctx.message();
+                System.out.println("Message Received: " + ctx.message());
+                try {
+                    //the gameplayservice, execute the command. should probably send back a ServerMessage as JSON
+                    gameplayService.executeUserGameCommand(json);
+                } catch (Exception e) {
+                    // if it doens't work, this is where you send back the ERROR notificatoin ServerMessage as JSON
+                    System.out.println("Exception: " + e);
+                }
+
                 ctx.send("Websocket response: " + ctx.message());
                 System.out.println(ctx.message());
             });

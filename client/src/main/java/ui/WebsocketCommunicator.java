@@ -1,6 +1,9 @@
 package ui;
 
+import chess.ChessMove;
+import chess.ChessPosition;
 import jakarta.websocket.*;
+import websocket.commands.MakeMoveCommand;
 
 import java.net.URI;
 import java.util.Scanner;
@@ -10,11 +13,11 @@ public class WebsocketCommunicator extends Endpoint {
     //main can be deleted, just for testing
     public static void main(String[] args) throws Exception {
         var ws = new WebsocketCommunicator(8080);
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter a message to echo");
-        while (true) {
-            ws.send(scanner.nextLine());
-        }
+//        Scanner scanner = new Scanner(System.in);
+//        System.out.println("Enter a message to echo");
+//        while (true) {
+//            ws.send(scanner.nextLine());
+//        }
     }
 
     public Session session;
