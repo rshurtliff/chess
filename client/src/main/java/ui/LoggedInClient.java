@@ -122,7 +122,7 @@ public class LoggedInClient implements Client {
         }
         try {
             serverFacade.joinGame(gameID, playerColor);
-            serverFacade.connect(gameID);
+
 
             //everythinbg from here to the next comment should be repladed by CONNECT / LOADGAME. the listener in websocket communicator should probably do this logic below
             var games = serverFacade.listGames();

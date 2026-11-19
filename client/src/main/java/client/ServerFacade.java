@@ -7,6 +7,7 @@ import model.GameData;
 import model.JoinGameRequest;
 import model.LoginRequest;
 import model.RegisterRequest;
+import ui.ServerMessageObserver;
 import ui.WebsocketCommunicator;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
@@ -23,15 +24,13 @@ public class ServerFacade {
     private final String url;
     private String authToken;
     private WebsocketCommunicator ws;
+    private int port;
 
 
     public ServerFacade(int port) {
         url = "http://localhost:" + port;
-        try {
-            ws = new WebsocketCommunicator(port);
-        } catch (Exception e) {
-            System.out.println("Error: couldn't connect to websocket");
-        }
+        this.port = port;
+
     }
 
     public void clear() throws ResponseException {
@@ -171,7 +170,8 @@ public class ServerFacade {
         ws.send(new Gson().toJson(moveCommand));
     }
 
-    public void connect(int gameId) throws Exception {
+    public void connect(ServerMessageObserver serverMessageObserver, int gameId) throws Exception {
+        ws = new WebsocketCommunicator(port, serverMessageObserver);
         UserGameCommand connectCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId);
         ws.send(new Gson().toJson(connectCommand));
     }

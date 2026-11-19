@@ -50,6 +50,9 @@ public class Repl {
                 System.out.println(loggedinClient.eval(input));
                 state = loggedinClient.nextState();
                 gamePlayClient.setCurrentGame(loggedinClient.getCurrentGame());
+                if (state.equals(State.PLAYING_GAME)) {
+                    gamePlayClient.connectToWebsocket();
+                }
 
             } else if (state.equals(State.PLAYING_GAME)) {
                 System.out.println(gamePlayClient.eval(input));

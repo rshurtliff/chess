@@ -9,20 +9,11 @@ import java.net.URI;
 import java.util.Scanner;
 
 public class WebsocketCommunicator extends Endpoint {
-
-    //main can be deleted, just for testing
-    public static void main(String[] args) throws Exception {
-        var ws = new WebsocketCommunicator(8080);
-//        Scanner scanner = new Scanner(System.in);
-//        System.out.println("Enter a message to echo");
-//        while (true) {
-//            ws.send(scanner.nextLine());
-//        }
-    }
-
     public Session session;
+    private ServerMessageObserver serverMessageObserver;
 
-    public WebsocketCommunicator(int port) throws Exception {
+    public WebsocketCommunicator(int port, ServerMessageObserver serverMessageObserver) throws Exception {
+        this.serverMessageObserver = serverMessageObserver;
         URI uri = new URI("ws://localhost:" + port + "/ws");
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         this.session = container.connectToServer(this, uri);

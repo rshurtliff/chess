@@ -43,14 +43,14 @@ public class Server {
         javalin.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 ctx.enableAutomaticPings();
-                System.out.println("Websocket Connected");
+                System.out.println("Websocket Connected: " + ctx.session);
             });
             ws.onMessage(ctx -> {
                 //get a UserGameCommand, handle it in GameplayService. If it's bad JSON, send back and ERROR notfication
                 String json = ctx.message();
                 System.out.println("Message Received: " + ctx.message());
                 try {
-                    ServerMessage result = gameplayService.executeUserGameCommand(json);
+                    gameplayService.executeUserGameCommand(json, ctx.session);
                     //who should it send the result to??
                 } catch (Exception e) {
                     // if it doens't work, this is where you send back the ERROR notificatoin ServerMessage as JSON

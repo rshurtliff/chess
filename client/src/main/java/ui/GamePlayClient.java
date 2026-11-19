@@ -6,13 +6,14 @@ import com.google.gson.Gson;
 import jakarta.websocket.WebSocketContainer;
 import model.GameData;
 import websocket.commands.MakeMoveCommand;
+import websocket.messages.ServerMessage;
 
 import java.util.Set;
 
 import static ui.EscapeSequences.RESET_TEXT_COLOR;
 import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 
-public class GamePlayClient implements Client {
+public class GamePlayClient implements Client, ServerMessageObserver {
     private final ServerFacade serverFacade;
     private Repl.State nextState;
     private GameplayData currentGame;
@@ -175,5 +176,18 @@ public class GamePlayClient implements Client {
 
     public void setCurrentGame(GameplayData gameData) {
         currentGame = gameData;
+    }
+
+    public void connectToWebsocket() {
+        try {
+            serverFacade.connect(this, currentGame.gameData().gameID());
+        } catch (Exception e) {
+            System.out.println("Error: Couldn't connect to websocket");
+        }
+    }
+
+    @Override
+    public void notify(ServerMessage serverMessage) {
+
     }
 }

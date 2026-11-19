@@ -6,36 +6,39 @@ import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.GameData;
-import server.Server;
+import server.Connection;
+import server.ConnectionManager;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
+import org.eclipse.jetty.websocket.api.Session;
 
-import java.awt.dnd.InvalidDnDOperationException;
 
 public class GameplayService {
     private final DataAccess dataAccess;
+    private final ConnectionManager connectionManager;
 
     public GameplayService(DataAccess dataAccess) {
         this.dataAccess = dataAccess;
-
+        connectionManager = new ConnectionManager();
     }
 
-    public ServerMessage executeUserGameCommand(String json) throws Exception {
+    public ServerMessage executeUserGameCommand(String json, Session session) throws Exception {
         UserGameCommand command = parseCommandFromJson(json);
         authenticate(command);
-        return switch (command.getCommandType()) {
+        switch (command.getCommandType()) {
             case UserGameCommand.CommandType.MAKE_MOVE -> makeMove((MakeMoveCommand) command);
-            case UserGameCommand.CommandType.CONNECT -> connect(command);
+            case UserGameCommand.CommandType.CONNECT -> connect(command, session);
             case UserGameCommand.CommandType.LEAVE -> leave(command);
             case UserGameCommand.CommandType.RESIGN -> resign(command);
-        };
+        }
+        return new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION); // this will need to be changed to void function later
     }
 
     private ServerMessage makeMove(MakeMoveCommand command) {
-        //NOT SURE THESE ARE BEING SENT TO THE RIGHT PEOPLE --- NEED CONNECTION MANAGER
+        //have this send the message back to the WebsocketCommunicator, not return it
         try {
             GameData gameData = dataAccess.getGame(command.getGameID());
             ChessMove proposedMove = command.getMove();
@@ -49,11 +52,16 @@ public class GameplayService {
         }
     }
 
-    private ServerMessage connect(UserGameCommand command) {
-        return null;
+    private void connect(UserGameCommand command, Session root) throws Exception {
+        String username = dataAccess.getAuth(command.getAuthToken()).username();
+        connectionManager.add(command.getGameID(), new Connection(root, username));
+        String rootMessage = new Gson().toJson(new LoadGameMessage(dataAccess.getGame(command.getGameID())));
+        root.getRemote().sendString(rootMessage);
+        //send a LOAD_GAME TO root, send NOTIFY to everyone else
+
         // should probably add them to a HashMap or something to track connections
         // then a ConnectionManager should probably notify the correct people based on what the command was.
-        // notifications should just be ctx.send(JSON of a ServerMessage) - that's either ERROR, NOTIFICATION, or LOAD GAME sub class of ServerMessage
+        // notifications should just be (JSON of a ServerMessage) - that's either ERROR, NOTIFICATION, or LOAD GAME sub class of ServerMessage
     }
 
     private ServerMessage leave(UserGameCommand command) {
