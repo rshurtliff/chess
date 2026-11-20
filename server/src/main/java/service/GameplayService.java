@@ -8,6 +8,7 @@ import dataaccess.DataAccessException;
 import model.GameData;
 import server.Connection;
 import server.ConnectionManager;
+import websocket.commands.ConnectCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
@@ -30,7 +31,7 @@ public class GameplayService {
         authenticate(command);
         switch (command.getCommandType()) {
             case UserGameCommand.CommandType.MAKE_MOVE -> makeMove((MakeMoveCommand) command);
-            case UserGameCommand.CommandType.CONNECT -> connect(command, session);
+            case UserGameCommand.CommandType.CONNECT -> connect((ConnectCommand) command, session);
             case UserGameCommand.CommandType.LEAVE -> leave(command);
             case UserGameCommand.CommandType.RESIGN -> resign(command);
         }
@@ -52,16 +53,15 @@ public class GameplayService {
         }
     }
 
-    private void connect(UserGameCommand command, Session root) throws Exception {
+    private void connect(ConnectCommand command, Session root) throws Exception {
         String username = dataAccess.getAuth(command.getAuthToken()).username();
-        connectionManager.add(command.getGameID(), new Connection(root, username));
+        connectionManager.add(command.getGameID(), new Connection(root, username, command.getRole()));
         String rootMessage = new Gson().toJson(new LoadGameMessage(dataAccess.getGame(command.getGameID())));
         root.getRemote().sendString(rootMessage);
-        //send a LOAD_GAME TO root, send NOTIFY to everyone else
 
-        // should probably add them to a HashMap or something to track connections
-        // then a ConnectionManager should probably notify the correct people based on what the command was.
-        // notifications should just be (JSON of a ServerMessage) - that's either ERROR, NOTIFICATION, or LOAD GAME sub class of ServerMessage
+        //notify everyone else
+
+        //send a LOAD_GAME TO root, send NOTIFY to everyone else
     }
 
     private ServerMessage leave(UserGameCommand command) {

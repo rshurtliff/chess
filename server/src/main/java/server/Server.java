@@ -46,7 +46,6 @@ public class Server {
                 System.out.println("Websocket Connected: " + ctx.session);
             });
             ws.onMessage(ctx -> {
-                //get a UserGameCommand, handle it in GameplayService. If it's bad JSON, send back and ERROR notfication
                 String json = ctx.message();
                 System.out.println("Message Received: " + ctx.message());
                 try {
