@@ -81,7 +81,7 @@ public class GamePlayClient implements Client, ServerMessageObserver {
         }
     }
 
-    private String redraw() {
+    public String redraw() {
         if (currentGame.pointOfView().equals(ChessGame.TeamColor.WHITE)) {
             return RenderBoard.showBoardForWhite(currentGame.gameData().game().getBoard(), null);
         } else {
@@ -100,7 +100,7 @@ public class GamePlayClient implements Client, ServerMessageObserver {
         return "NOT IMPLEMENTED";
     }
 
-    private String highlight(String[] arguments) {
+    public String highlight(String[] arguments) {
         var position = convertToPosition(arguments[1]);
         ChessBoard board = currentGame.gameData().game().getBoard();
         if (board.getPiece(position) == null) {
@@ -120,7 +120,7 @@ public class GamePlayClient implements Client, ServerMessageObserver {
         return new ChessPosition(row, col);
     }
 
-    private boolean validateArguments(String[] arguments) {
+    public boolean validateArguments(String[] arguments) {
         if (arguments.length == 0) {
             return false;
         }

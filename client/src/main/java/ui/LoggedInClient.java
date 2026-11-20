@@ -139,14 +139,15 @@ public class LoggedInClient implements Client {
         } catch (NumberFormatException e) {
             return ("Error: GameID must be an integer");
         }
-        try {
-            var games = serverFacade.listGames();
-            nextState = Repl.State.OBSERVING;
-            currentGame = new GameplayData(lookupGame(gameID), ChessGame.TeamColor.WHITE);
-            return RenderBoard.showBoardForWhite(games.get(gameID - 1).game().getBoard(), null);
-        } catch (ResponseException e) {
-            return (e.getMessage());
-        }
+//        try {
+//            var games = serverFacade.listGames();
+        nextState = Repl.State.OBSERVING;
+        currentGame = new GameplayData(lookupGame(gameID), ChessGame.TeamColor.WHITE);
+//            return RenderBoard.showBoardForWhite(games.get(gameID - 1).game().getBoard(), null);
+        return "Successfully joined as observer";
+//        } catch (ResponseException e) {
+//            return (e.getMessage());
+//        }
     }
 
     private String logoutHandler() {

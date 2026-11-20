@@ -5,6 +5,7 @@ import client.ServerFacade;
 import model.GameData;
 
 import java.util.ArrayList;
+import java.util.Observer;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -17,12 +18,14 @@ public class Repl {
     private final Client pregameClient;
     private final LoggedInClient loggedinClient;
     private final GamePlayClient gamePlayClient;
+    private final ObserverClient observerClient;
 
     public Repl(ServerFacade serverFacade) {
         this.serverFacade = serverFacade;
         pregameClient = new PregameClient(serverFacade);
         loggedinClient = new LoggedInClient(serverFacade, null);
         gamePlayClient = new GamePlayClient(serverFacade, null);
+        observerClient = new ObserverClient(gamePlayClient);
 
         state = State.SIGNED_OUT;
     }
@@ -52,12 +55,17 @@ public class Repl {
                 gamePlayClient.setCurrentGame(loggedinClient.getCurrentGame());
                 if (state.equals(State.PLAYING_GAME)) {
                     gamePlayClient.connectToWebsocket();
+                } else if (state.equals(State.OBSERVING)) {
+                    gamePlayClient.connectToWebsocket(); //collapse this if it stays
                 }
 
             } else if (state.equals(State.PLAYING_GAME)) {
                 System.out.println(gamePlayClient.eval(input));
                 state = gamePlayClient.nextState();
                 loggedinClient.setCurrentGame((gamePlayClient.getCurrentGame()));
+            } else if (state.equals(State.OBSERVING)) {
+                System.out.println(observerClient.eval(input));
+                state = observerClient.nextState();
             }
         }
         scanner.close();
