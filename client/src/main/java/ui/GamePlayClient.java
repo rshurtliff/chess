@@ -6,6 +6,9 @@ import com.google.gson.Gson;
 import jakarta.websocket.WebSocketContainer;
 import model.GameData;
 import websocket.commands.MakeMoveCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.util.Set;
@@ -48,6 +51,7 @@ public class GamePlayClient implements Client, ServerMessageObserver {
 
     @Override
     public String eval(String input) {
+        nextState = Repl.State.PLAYING_GAME;
         String[] arguments = input.trim().split("\\s+");
         if (!validateArguments(arguments)) {
             help();
@@ -188,6 +192,22 @@ public class GamePlayClient implements Client, ServerMessageObserver {
 
     @Override
     public void notify(ServerMessage serverMessage) {
+        switch (serverMessage) {
+            case LoadGameMessage loadGameMessage -> showGame(loadGameMessage);
+            case NotificationMessage notificationMessage ->
+                    System.out.println("Notification: " + notificationMessage.getMessage());
+            case ErrorMessage errorMessage -> System.out.println("Error: " + errorMessage.getErrorMessage());
+            default ->
+                    System.out.println("RYAN, you screwed up coding this. This should never hit\n Message was: " + serverMessage.getServerMessageType());
+        }
+    }
 
+    private void showGame(LoadGameMessage loadGameMessage) {
+        ChessBoard board = loadGameMessage.getGame().game().getBoard();
+        if (currentGame.pointOfView().equals(ChessGame.TeamColor.WHITE)) {
+            System.out.println(RenderBoard.showBoardForWhite(board, null));
+        } else {
+            System.out.println(RenderBoard.showBoardForBlack(board, null));
+        }
     }
 }

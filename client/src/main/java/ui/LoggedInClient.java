@@ -43,6 +43,7 @@ public class LoggedInClient implements Client {
 
     @Override
     public String eval(String input) {
+        nextState = Repl.State.SIGNED_IN;
         String[] arguments = input.trim().split("\\s+");
         if (!validateArguments(arguments)) {
             help();
@@ -122,22 +123,19 @@ public class LoggedInClient implements Client {
         }
         try {
             serverFacade.joinGame(gameID, playerColor);
-
-
             //everythinbg from here to the next comment should be repladed by CONNECT / LOADGAME. the listener in websocket communicator should probably do this logic below
             var games = serverFacade.listGames();
             var board = games.get(gameID - 1).game().getBoard();
-            String boardString;
-            if (arguments[2].equalsIgnoreCase("black")) {
-                boardString = RenderBoard.showBoardForBlack(board, null);
-            } else {
-                boardString = RenderBoard.showBoardForWhite(board, null);
-            }
+//            String boardString;
+//            if (arguments[2].equalsIgnoreCase("black")) {
+//                boardString = RenderBoard.showBoardForBlack(board, null);
+//            } else {
+//                boardString = RenderBoard.showBoardForWhite(board, null);
+//            }
             // SEE ABOVE COMMENT
-
             nextState = Repl.State.PLAYING_GAME;
             currentGame = new GameplayData(games.get(gameID - 1), (playerColor.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK));
-            return ("Successfully joined game " + gameID + " as " + playerColor + "\n" + boardString);
+            return ("Successfully joined game " + gameID + " as " + playerColor + "\n");
         } catch (Exception e) {
             return (e.getMessage());
         }

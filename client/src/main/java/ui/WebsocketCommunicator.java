@@ -2,8 +2,13 @@ package ui;
 
 import chess.ChessMove;
 import chess.ChessPosition;
+import com.google.gson.Gson;
 import jakarta.websocket.*;
 import websocket.commands.MakeMoveCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.net.URI;
 import java.util.Scanner;
@@ -20,7 +25,14 @@ public class WebsocketCommunicator extends Endpoint {
 
         this.session.addMessageHandler(new MessageHandler.Whole<String>() {
             public void onMessage(String message) {
-                System.out.println(message);
+                ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                var type = serverMessage.getServerMessageType();
+                switch (type) {
+                    case LOAD_GAME -> serverMessageObserver.notify(new Gson().fromJson(message, LoadGameMessage.class));
+                    case NOTIFICATION ->
+                            serverMessageObserver.notify(new Gson().fromJson(message, NotificationMessage.class));
+                    case ERROR -> serverMessageObserver.notify(new Gson().fromJson(message, ErrorMessage.class));
+                }
             }
         });
     }

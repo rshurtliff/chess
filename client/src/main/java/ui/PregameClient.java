@@ -37,6 +37,7 @@ public class PregameClient implements Client {
 
     @Override
     public String eval(String input) {
+        nextState = State.SIGNED_OUT;
         String[] arguments = input.trim().split("\\s+");
         if (!validateArguments(arguments)) {
             return ("Error: invalid command\n" + help());
