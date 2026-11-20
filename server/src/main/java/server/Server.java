@@ -45,6 +45,7 @@ public class Server {
                 ctx.enableAutomaticPings();
                 System.out.println("Websocket Connected: " + ctx.session);
             });
+
             ws.onMessage(ctx -> {
                 String json = ctx.message();
                 System.out.println("Message Received: " + ctx.message());
@@ -59,7 +60,13 @@ public class Server {
                 ctx.send("Websocket response: " + ctx.message());
                 System.out.println(ctx.message());
             });
-            ws.onClose(ctx -> System.out.println("Websocket Closed"));
+
+            ws.onClose(ctx -> {
+                    System.out.println("Websocket Closed");
+                    gameplayService.removeConnection(ctx.session);
+            });
+
+
         });
     }
 

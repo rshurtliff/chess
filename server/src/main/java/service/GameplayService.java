@@ -13,6 +13,7 @@ import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 import org.eclipse.jetty.websocket.api.Session;
 
@@ -60,6 +61,9 @@ public class GameplayService {
         root.getRemote().sendString(rootMessage);
 
         //notify everyone else
+        int gameID = command.getGameID();
+        ServerMessage nonRootMessage = new NotificationMessage(username + " has joined as " + command.getRole());
+        connectionManager.notifyNonRoot(gameID, nonRootMessage, root);
 
         //send a LOAD_GAME TO root, send NOTIFY to everyone else
     }
@@ -87,4 +91,7 @@ public class GameplayService {
         }
     }
 
+    public void removeConnection(Session session) {
+        connectionManager.remove(session);
+    }
 }

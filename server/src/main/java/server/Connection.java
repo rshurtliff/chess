@@ -14,6 +14,20 @@ public class Connection {
         this.role = role;
     }
 
+    public Session getSession() {
+        return session;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public ConnectCommand.Role getRole() {
+        return role;
+    }
+
+
+
 }
 
 
