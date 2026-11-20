@@ -56,7 +56,7 @@ public class Repl {
                 if (state.equals(State.PLAYING_GAME)) {
                     gamePlayClient.connectToWebsocket();
                 } else if (state.equals(State.OBSERVING)) {
-                    gamePlayClient.connectToWebsocket(); //collapse this if it stays
+                    gamePlayClient.connectToWebsocketObserver();
                 }
 
             } else if (state.equals(State.PLAYING_GAME)) {

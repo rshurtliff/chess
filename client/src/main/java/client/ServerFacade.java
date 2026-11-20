@@ -9,6 +9,7 @@ import model.LoginRequest;
 import model.RegisterRequest;
 import ui.ServerMessageObserver;
 import ui.WebsocketCommunicator;
+import websocket.commands.ConnectCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 
@@ -170,9 +171,9 @@ public class ServerFacade {
         ws.send(new Gson().toJson(moveCommand));
     }
 
-    public void connect(ServerMessageObserver serverMessageObserver, int gameId) throws Exception {
+    public void connect(ServerMessageObserver serverMessageObserver, int gameId, ConnectCommand.Role role) throws Exception {
         ws = new WebsocketCommunicator(port, serverMessageObserver);
-        UserGameCommand connectCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId);
+        UserGameCommand connectCommand = new ConnectCommand(authToken, gameId, role);
         ws.send(new Gson().toJson(connectCommand));
     }
 }

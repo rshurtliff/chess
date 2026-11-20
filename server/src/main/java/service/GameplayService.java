@@ -80,6 +80,8 @@ public class GameplayService {
         UserGameCommand command = new Gson().fromJson(json, UserGameCommand.class);
         if (command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE) {
             command = new Gson().fromJson(json, MakeMoveCommand.class);
+        } else if (command.getCommandType() == UserGameCommand.CommandType.CONNECT) {
+            command = new Gson().fromJson(json, ConnectCommand.class);
         }
         return command;
     }
