@@ -77,20 +77,10 @@ public class GamePlayClient implements Client, ServerMessageObserver {
         int gameId = currentGame.gameData().gameID();
         try {
             serverFacade.makeMove(gameId, proposedMove);
-            updateCurrentGame(gameId);
         } catch (Exception e) {
             return ("Error: " + e.getMessage());
         }
         return ("Move made! Waiting for opponent to move . . .");
-    }
-
-    private void updateCurrentGame(int gameID) {
-        try {
-            GameData game = serverFacade.listGames().get(gameID - 1);
-            currentGame = new GameplayData(game, currentGame.pointOfView());
-        } catch (Exception e) {
-            System.out.println(e + e.getMessage());
-        }
     }
 
     public String redraw() {
@@ -230,6 +220,7 @@ public class GamePlayClient implements Client, ServerMessageObserver {
         } else {
             System.out.println(RenderBoard.showBoardForBlack(board, null));
         }
+        currentGame.updateGame(loadGameMessage.getGame().game());
     }
 
 }
