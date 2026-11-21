@@ -13,10 +13,16 @@ import java.util.Objects;
 public class ChessGame {
     private TeamColor turn;
     private ChessBoard gameBoard = new ChessBoard();
+    private Status status;
 
     public ChessGame() {
         turn = TeamColor.WHITE;
         gameBoard.resetBoard();
+        status = Status.NOT_OVER;
+    }
+
+    public enum Status{
+        OVER, NOT_OVER
     }
 
     @Override
@@ -186,5 +192,12 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return gameBoard;
+    }
+
+    public void endGame(){
+        status = Status.OVER;
+    }
+    public Status getStatus(){
+        return status;
     }
 }
