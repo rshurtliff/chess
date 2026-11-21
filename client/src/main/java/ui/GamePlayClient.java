@@ -80,7 +80,7 @@ public class GamePlayClient implements Client, ServerMessageObserver {
         } catch (Exception e) {
             return ("Error: " + e.getMessage());
         }
-        return ("Move made! Waiting for opponent to move . . .");
+        return ("Move made! Waiting for opponent to move . . ."); // need to fix. have WS/server send back notification / error message.
     }
 
     public String redraw() {
@@ -91,11 +91,19 @@ public class GamePlayClient implements Client, ServerMessageObserver {
         }
     }
 
-    private String leave() {
+    public String leave() {
         //this will be a websocket command too
+        try {
+            serverFacade.leave(currentGame.gameData().gameID());
+        } catch (Exception e) {
+            return ("Error: " + e.getMessage());
+        }
         nextState = Repl.State.SIGNED_IN;
-        return "NOT IMPLEMENTED";
+        return ""; // need to fix. probably should be void and let the websocket send back the error message / notificaoitn of success. Websocket does notify on success / error
     }
+
+
+
 
     private String resign() {
         //make sure they really wanna resign - websocket

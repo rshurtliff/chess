@@ -54,7 +54,7 @@ public class ObserverClient implements Client {
 
     private String leave() {
         nextState = Repl.State.SIGNED_IN;
-        return "NOT YET IMPLEMENTED";
+        return client.leave();
     }
 
 }

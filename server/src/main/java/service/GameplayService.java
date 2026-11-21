@@ -35,7 +35,7 @@ public class GameplayService {
         switch (command.getCommandType()) {
             case UserGameCommand.CommandType.MAKE_MOVE -> makeMove((MakeMoveCommand) command, session);
             case UserGameCommand.CommandType.CONNECT -> connect((ConnectCommand) command, session);
-            case UserGameCommand.CommandType.LEAVE -> leave(command);
+            case UserGameCommand.CommandType.LEAVE -> leave(command, session);
             case UserGameCommand.CommandType.RESIGN -> resign(command);
         }
         return new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION); // this will need to be changed to void function later
@@ -98,12 +98,28 @@ public class GameplayService {
         //send a LOAD_GAME TO root, send NOTIFY to everyone else
     }
 
-    private ServerMessage leave(UserGameCommand command) {
-        return null;
+    private void leave(UserGameCommand command, Session root) throws DataAccessException {
+        String username = dataAccess.getAuth(command.getAuthToken()).username();
+        int gameID = command.getGameID();
+        GameData oldGame = dataAccess.getGame(gameID);
+        Connection connection = connectionManager.getConnection(gameID, root);
+        ConnectCommand.Role role = connection.getRole();
+        if (role == ConnectCommand.Role.BLACK_PLAYER) {
+            GameData newGame = new GameData(gameID, oldGame.whiteUsername(), null, oldGame.gameName(), oldGame.game());
+            dataAccess.updateGame(newGame);
+        } else if (role == ConnectCommand.Role.WHITE_PLAYER) {
+            GameData newGame = new GameData(gameID, null, oldGame.blackUsername(), oldGame.gameName(), oldGame.game());
+            dataAccess.updateGame(newGame);
+        }
+
+        removeConnection(root);
+        connectionManager.notifyRoot("You left the game", root);
+
+        ServerMessage message = new NotificationMessage(username + " has left the game as " + role);
+        connectionManager.notifyNonRoot(gameID, message, root);
     }
 
-    private ServerMessage resign(UserGameCommand command) {
-        return null;
+    private void resign(UserGameCommand command) {
     }
 
     private UserGameCommand parseCommandFromJson(String json) {

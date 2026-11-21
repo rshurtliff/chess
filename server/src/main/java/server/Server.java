@@ -48,22 +48,17 @@ public class Server {
 
             ws.onMessage(ctx -> {
                 String json = ctx.message();
-                System.out.println("Message Received: " + ctx.message());
                 try {
                     gameplayService.executeUserGameCommand(json, ctx.session);
-                    //who should it send the result to??
                 } catch (Exception e) {
                     // if it doens't work, this is where you send back the ERROR notificatoin ServerMessage as JSON
                     System.out.println("Exception: " + e);
                 }
-
-                ctx.send("Websocket response: " + ctx.message());
-                System.out.println(ctx.message());
             });
 
             ws.onClose(ctx -> {
-                    System.out.println("Websocket Closed");
-                    gameplayService.removeConnection(ctx.session);
+                System.out.println("Websocket Closed");
+                gameplayService.removeConnection(ctx.session);
             });
 
 

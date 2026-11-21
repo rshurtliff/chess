@@ -166,15 +166,20 @@ public class ServerFacade {
         return authToken;
     }
 
+    public void connect(ServerMessageObserver serverMessageObserver, int gameId, ConnectCommand.Role role) throws Exception {
+        ws = new WebsocketCommunicator(port, serverMessageObserver);
+        UserGameCommand connectCommand = new ConnectCommand(authToken, gameId, role);
+        ws.send(new Gson().toJson(connectCommand));
+    }
+
     public void makeMove(int gameId, ChessMove proposedMove) throws Exception {
         MakeMoveCommand moveCommand = new MakeMoveCommand(authToken, gameId, proposedMove);
         ws.send(new Gson().toJson(moveCommand));
     }
 
-    public void connect(ServerMessageObserver serverMessageObserver, int gameId, ConnectCommand.Role role) throws Exception {
-        ws = new WebsocketCommunicator(port, serverMessageObserver);
-        UserGameCommand connectCommand = new ConnectCommand(authToken, gameId, role);
-        ws.send(new Gson().toJson(connectCommand));
+    public void leave(int gameID) throws Exception {
+        UserGameCommand leaveCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+        ws.send(new Gson().toJson(leaveCommand));
     }
 }
 
