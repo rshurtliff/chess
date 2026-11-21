@@ -17,6 +17,8 @@ import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 import org.eclipse.jetty.websocket.api.Session;
 
+import java.io.IOException;
+
 
 public class GameplayService {
     private final DataAccess dataAccess;
@@ -31,7 +33,7 @@ public class GameplayService {
         UserGameCommand command = parseCommandFromJson(json);
         authenticate(command);
         switch (command.getCommandType()) {
-            case UserGameCommand.CommandType.MAKE_MOVE -> makeMove((MakeMoveCommand) command);
+            case UserGameCommand.CommandType.MAKE_MOVE -> makeMove((MakeMoveCommand) command, session);
             case UserGameCommand.CommandType.CONNECT -> connect((ConnectCommand) command, session);
             case UserGameCommand.CommandType.LEAVE -> leave(command);
             case UserGameCommand.CommandType.RESIGN -> resign(command);
@@ -39,20 +41,48 @@ public class GameplayService {
         return new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION); // this will need to be changed to void function later
     }
 
-    private ServerMessage makeMove(MakeMoveCommand command) {
+    private void makeMove(MakeMoveCommand command, Session root) throws IOException, DataAccessException {
         //have this send the message back to the WebsocketCommunicator, not return it
         try {
-            GameData gameData = dataAccess.getGame(command.getGameID());
+            int gameID = command.getGameID();
+            GameData gameData = dataAccess.getGame(gameID);
             ChessMove proposedMove = command.getMove();
+
+            var moveColor = gameData.game().getTeamTurn();
             gameData.game().makeMove(proposedMove);
             dataAccess.updateGame(gameData);
-            return new LoadGameMessage(dataAccess.getGame(command.getGameID()));
+
+            GameData updatedGame = dataAccess.getGame(gameID);
+
+            connectionManager.notifyAll(gameID, new LoadGameMessage(updatedGame));
+            connectionManager.notifyNonRoot(gameID, new NotificationMessage(moveColor + " moved " + proposedMove.getStartPosition()
+                    + " to " + proposedMove.getEndPosition()), root);
+            checkGameState(updatedGame);
         } catch (InvalidMoveException e) {
-            return new ErrorMessage("Error: Invalid move! (Hint - make sure it's your turn!)");
-        } catch (DataAccessException e) {
-            return new ErrorMessage("Error: " + e.getMessage());
+            var error = new ErrorMessage("Error: invalid move! Make sure it's your turn!");
+            root.getRemote().sendString(new Gson().toJson(error));
         }
     }
+
+    private void checkGameState(GameData updatedGame) throws IOException {
+        var colorToCheck = updatedGame.game().getTeamTurn();
+        int gameID = updatedGame.gameID();
+        boolean staleMate = updatedGame.game().isInStalemate(colorToCheck);
+        boolean checkmate = updatedGame.game().isInCheckmate(colorToCheck);
+        boolean check = updatedGame.game().isInCheck(colorToCheck);
+        NotificationMessage message = null;
+        if (staleMate) {
+            message = new NotificationMessage(colorToCheck + " is in stalemate! Game over.");
+        } else if (checkmate) {
+            message = new NotificationMessage(colorToCheck + " is in checkmate! Game over.");
+        } else if (check) {
+            message = new NotificationMessage(colorToCheck + " is in check!");
+        }
+        if (message != null) {
+            connectionManager.notifyAll(gameID, message);
+        }
+    }
+
 
     private void connect(ConnectCommand command, Session root) throws Exception {
         String username = dataAccess.getAuth(command.getAuthToken()).username();

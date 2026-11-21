@@ -77,9 +77,19 @@ public class GamePlayClient implements Client, ServerMessageObserver {
         int gameId = currentGame.gameData().gameID();
         try {
             serverFacade.makeMove(gameId, proposedMove);
-            return "NOT SURE WHAT TO RETURN HERE, PROBABLY THE NEW BOARD AFTER THE MOVE RENDERED";
+            updateCurrentGame(gameId);
         } catch (Exception e) {
             return ("Error: " + e.getMessage());
+        }
+        return ("Move made! Waiting for opponent to move . . .");
+    }
+
+    private void updateCurrentGame(int gameID) {
+        try {
+            GameData game = serverFacade.listGames().get(gameID - 1);
+            currentGame = new GameplayData(game, currentGame.pointOfView());
+        } catch (Exception e) {
+            System.out.println(e + e.getMessage());
         }
     }
 
@@ -207,7 +217,7 @@ public class GamePlayClient implements Client, ServerMessageObserver {
             case LoadGameMessage loadGameMessage -> showGame(loadGameMessage);
             case NotificationMessage notificationMessage ->
                     System.out.println("Notification: " + notificationMessage.getMessage());
-            case ErrorMessage errorMessage -> System.out.println("Error: " + errorMessage.getErrorMessage());
+            case ErrorMessage errorMessage -> System.out.println(errorMessage.getErrorMessage());
             default ->
                     System.out.println("RYAN, you screwed up coding this. This should never hit\n Message was: " + serverMessage.getServerMessageType());
         }
@@ -221,4 +231,5 @@ public class GamePlayClient implements Client, ServerMessageObserver {
             System.out.println(RenderBoard.showBoardForBlack(board, null));
         }
     }
+
 }

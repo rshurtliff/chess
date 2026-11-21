@@ -29,6 +29,13 @@ public class ConnectionManager {
         }
     }
 
+    public void notifyAll(Integer gameID, ServerMessage message) throws IOException {
+        for (Connection connection : connections.get(gameID)) {
+            String notification = new Gson().toJson(message);
+            connection.getSession().getRemote().sendString(notification);
+        }
+    }
+
     public void remove(Session session) {
         for (Set<Connection> connectionSet : connections.values()) {
             connectionSet.removeIf(connection -> connection.getSession().equals(session));
