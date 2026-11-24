@@ -32,7 +32,7 @@ public class GameplayService {
 
     public ServerMessage executeUserGameCommand(String json, Session session) throws Exception {
         UserGameCommand command = parseCommandFromJson(json);
-        authenticate(command);
+        authenticate(command, session);
         switch (command.getCommandType()) {
             case UserGameCommand.CommandType.MAKE_MOVE -> makeMove((MakeMoveCommand) command, session);
             case UserGameCommand.CommandType.CONNECT -> connect((ConnectCommand) command, session);
@@ -45,6 +45,10 @@ public class GameplayService {
     private void makeMove(MakeMoveCommand command, Session root) throws IOException, DataAccessException {
         //have this send the message back to the WebsocketCommunicator, not return it
         String username = dataAccess.getAuth(command.getAuthToken()).username();
+        if (dataAccess.getGame(command.getGameID()) == null) {
+            connectionManager.sendError("Error: Tried to connect to a GameID that doesn't exist!", root);
+            return;
+        }
         try {
             int gameID = command.getGameID();
             GameData gameData = dataAccess.getGame(gameID);
@@ -90,13 +94,19 @@ public class GameplayService {
     }
 
 
-    private void connect(ConnectCommand command, Session root) throws Exception {
+    private void connect(ConnectCommand command, Session root) throws DataAccessException, IOException {
+        try {
+            System.out.println(dataAccess.getAuth(command.getAuthToken()));
+        } catch (DataAccessException e) {
+            connectionManager.notifyRoot("Error: You're not authorized!", root);
+            return;
+        }
         String username = dataAccess.getAuth(command.getAuthToken()).username();
-        //need to make sure that the gameID is in database
         if (dataAccess.getGame(command.getGameID()) == null) {
             connectionManager.sendError("Error: Tried to connect to a GameID that doesn't exist!", root);
             return;
         }
+
         connectionManager.add(command.getGameID(), new Connection(root, username, command.getRole()));
         String rootMessage = new Gson().toJson(new LoadGameMessage(dataAccess.getGame(command.getGameID())));
         root.getRemote().sendString(rootMessage);
@@ -148,10 +158,14 @@ public class GameplayService {
         return command;
     }
 
-    private void authenticate(UserGameCommand command) throws Exception {
-        var auth = dataAccess.getAuth(command.getAuthToken());
-        if (auth == null) {
-            throw new DataAccessException("Error: unauthorized");
+    private void authenticate(UserGameCommand command, Session root) {
+        try {
+            var auth = dataAccess.getAuth(command.getAuthToken());
+            if (auth == null) {
+                connectionManager.sendError("Error: You're not authorized!", root);
+            }
+        } catch (DataAccessException e) {
+            connectionManager.sendError("Error: You're not authorized!", root);
         }
     }
 

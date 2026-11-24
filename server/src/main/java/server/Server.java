@@ -52,7 +52,7 @@ public class Server {
                     gameplayService.executeUserGameCommand(json, ctx.session);
                 } catch (Exception e) {
                     // if it doens't work, this is where you send back the ERROR notificatoin ServerMessage as JSON
-                    System.out.println("Exception: " + e);
+                    System.out.println("CAUGHT THIS EXCEPTION: " + e);
                 }
             });
 
