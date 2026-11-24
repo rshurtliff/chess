@@ -92,6 +92,11 @@ public class GameplayService {
 
     private void connect(ConnectCommand command, Session root) throws Exception {
         String username = dataAccess.getAuth(command.getAuthToken()).username();
+        //need to make sure that the gameID is in database
+        if (dataAccess.getGame(command.getGameID()) == null) {
+            connectionManager.sendError("Error: Tried to connect to a GameID that doesn't exist!", root);
+            return;
+        }
         connectionManager.add(command.getGameID(), new Connection(root, username, command.getRole()));
         String rootMessage = new Gson().toJson(new LoadGameMessage(dataAccess.getGame(command.getGameID())));
         root.getRemote().sendString(rootMessage);
