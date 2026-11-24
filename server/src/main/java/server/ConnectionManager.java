@@ -23,30 +23,21 @@ public class ConnectionManager {
         connections.computeIfAbsent(gameID, k -> ConcurrentHashMap.newKeySet()).add(connection);
     }
 
-    public Connection getConnection(int gameID, Session session){
-       Set<Connection> connectionSet = connections.get(gameID);
-       for (Connection connection : connectionSet){
-           if (connection.getSession().equals(session)){
-               return connection;
-           }
-       }
-       return null;
-    }
-
-    public void notifyRoot(String message, Session session) {
-        try {
-            ServerMessage notification = new NotificationMessage(message);
-            session.getRemote().sendString(new Gson().toJson(notification));
-        } catch (IOException e) {
-            sendError(e.getMessage(), session);
+    public Connection getConnection(int gameID, Session session) {
+        Set<Connection> connectionSet = connections.get(gameID);
+        for (Connection connection : connectionSet) {
+            if (connection.getSession().equals(session)) {
+                return connection;
+            }
         }
+        return null;
     }
 
-    public void sendError(String message, Session session){
+    public void sendError(String message, Session session) {
         ServerMessage error = new ErrorMessage(message);
         try {
             session.getRemote().sendString(new Gson().toJson(error));
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println("COULDN'T CONNECT TO WEBSOCKET TO SEND ERROR");
         }
     }

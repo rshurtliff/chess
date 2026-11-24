@@ -96,7 +96,7 @@ public class GamePlayClient implements Client, ServerMessageObserver {
             return ("Error: " + e.getMessage());
         }
         nextState = Repl.State.SIGNED_IN;
-        return ""; // need to fix. probably should be void and let the websocket send back the error message / notificaoitn of success. Websocket does notify on success / error
+        return "";
     }
 
 
@@ -226,8 +226,7 @@ public class GamePlayClient implements Client, ServerMessageObserver {
             case NotificationMessage notificationMessage ->
                     System.out.println("Notification: " + notificationMessage.getMessage());
             case ErrorMessage errorMessage -> System.out.println(errorMessage.getErrorMessage());
-            default ->
-                    System.out.println("RYAN, you screwed up coding this. This should never hit\n Message was: " + serverMessage.getServerMessageType());
+            default -> System.out.println("Something went wrong, this default switch should never hit.");
         }
     }
 

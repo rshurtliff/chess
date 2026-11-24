@@ -125,7 +125,8 @@ public class LoggedInClient implements Client {
             serverFacade.joinGame(gameID, playerColor);
             var games = serverFacade.listGames();
             nextState = Repl.State.PLAYING_GAME;
-            currentGame = new GameplayData(games.get(gameID - 1), (playerColor.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK));
+            currentGame = new GameplayData(games.get(gameID - 1),
+                    (playerColor.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK));
             return ("Successfully joined game " + gameID + " as " + playerColor);
         } catch (Exception e) {
             return (e.getMessage());
@@ -139,15 +140,10 @@ public class LoggedInClient implements Client {
         } catch (NumberFormatException e) {
             return ("Error: GameID must be an integer");
         }
-//        try {
-//            var games = serverFacade.listGames();
         nextState = Repl.State.OBSERVING;
         currentGame = new GameplayData(lookupGame(gameID), ChessGame.TeamColor.WHITE);
-//            return RenderBoard.showBoardForWhite(games.get(gameID - 1).game().getBoard(), null);
         return "Successfully joined as observer";
-//        } catch (ResponseException e) {
-//            return (e.getMessage());
-//        }
+
     }
 
     private String logoutHandler() {
