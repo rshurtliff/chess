@@ -2,12 +2,7 @@ package ui;
 
 import chess.*;
 import client.ServerFacade;
-import com.google.gson.Gson;
-import jakarta.websocket.WebSocketContainer;
-import model.GameData;
 import websocket.commands.ConnectCommand;
-import websocket.commands.MakeMoveCommand;
-import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -208,7 +203,7 @@ public class GamePlayClient implements Client, ServerMessageObserver {
     }
 
     public void connectToWebsocket() {
-        ConnectCommand.Role role = currentGame.pointOfView() == ChessGame.TeamColor.WHITE ? ConnectCommand.Role.WHITE_PLAYER : ConnectCommand.Role.BLACK_PLAYER;
+        ConnectCommand.Role role = currentGame.pointOfView() == ChessGame.TeamColor.WHITE ? ConnectCommand.Role.WHITE : ConnectCommand.Role.BLACK_PLAYER;
         try {
             serverFacade.connect(this, currentGame.gameData().gameID(), role);
         } catch (Exception e) {

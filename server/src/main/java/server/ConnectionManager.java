@@ -32,6 +32,7 @@ public class ConnectionManager {
        }
        return null;
     }
+
     public void notifyRoot(String message, Session session) {
         try {
             ServerMessage notification = new NotificationMessage(message);
@@ -76,6 +77,5 @@ public class ConnectionManager {
             connectionSet.removeIf(connection -> connection.getSession().equals(session));
         }
     }
-
 
 }

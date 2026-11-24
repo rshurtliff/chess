@@ -43,7 +43,6 @@ public class GameplayService {
     }
 
     private void makeMove(MakeMoveCommand command, Session root) throws IOException, DataAccessException {
-        //have this send the message back to the WebsocketCommunicator, not return it
         String username = dataAccess.getAuth(command.getAuthToken()).username();
         if (dataAccess.getGame(command.getGameID()) == null) {
             connectionManager.sendError("Error: Tried to connect to a GameID that doesn't exist!", root);
@@ -52,13 +51,20 @@ public class GameplayService {
         try {
             int gameID = command.getGameID();
             GameData gameData = dataAccess.getGame(gameID);
+            // need to make sure you can't move for your opponent.
+            ChessGame.TeamColor pieceOwnerColor = gameData.game().getBoard().getPiece(command.getMove().getStartPosition()).getTeamColor();
+            String pieceOwnerUsername = (pieceOwnerColor == ChessGame.TeamColor.WHITE) ? gameData.whiteUsername() : gameData.blackUsername();
+            if (!pieceOwnerUsername.equals(username)) {
+                connectionManager.sendError("Error: You can't move that piece, it's not yours!", root);
+                return;
+            }
+
             if (gameData.game().getStatus() == ChessGame.Status.OVER) {
                 connectionManager.sendError("Error: Game is over. No moves can be made", root);
                 return;
             }
             ChessMove proposedMove = command.getMove();
 
-            var moveColor = gameData.game().getTeamTurn();
             gameData.game().makeMove(proposedMove);
             dataAccess.updateGame(gameData);
 
@@ -95,28 +101,18 @@ public class GameplayService {
 
 
     private void connect(ConnectCommand command, Session root) throws DataAccessException, IOException {
-        try {
-            System.out.println(dataAccess.getAuth(command.getAuthToken()));
-        } catch (DataAccessException e) {
-            connectionManager.notifyRoot("Error: You're not authorized!", root);
-            return;
-        }
         String username = dataAccess.getAuth(command.getAuthToken()).username();
         if (dataAccess.getGame(command.getGameID()) == null) {
             connectionManager.sendError("Error: Tried to connect to a GameID that doesn't exist!", root);
             return;
         }
-
         connectionManager.add(command.getGameID(), new Connection(root, username, command.getRole()));
         String rootMessage = new Gson().toJson(new LoadGameMessage(dataAccess.getGame(command.getGameID())));
         root.getRemote().sendString(rootMessage);
 
-        //notify everyone else
         int gameID = command.getGameID();
         ServerMessage nonRootMessage = new NotificationMessage(username + " has joined as " + command.getRole());
         connectionManager.notifyNonRoot(gameID, nonRootMessage, root);
-
-        //send a LOAD_GAME TO root, send NOTIFY to everyone else
     }
 
     private void leave(UserGameCommand command, Session root) throws DataAccessException {
@@ -128,7 +124,7 @@ public class GameplayService {
         if (role == ConnectCommand.Role.BLACK_PLAYER) {
             GameData newGame = new GameData(gameID, oldGame.whiteUsername(), null, oldGame.gameName(), oldGame.game());
             dataAccess.updateGame(newGame);
-        } else if (role == ConnectCommand.Role.WHITE_PLAYER) {
+        } else if (role == ConnectCommand.Role.WHITE) {
             GameData newGame = new GameData(gameID, null, oldGame.blackUsername(), oldGame.gameName(), oldGame.game());
             dataAccess.updateGame(newGame);
         }
