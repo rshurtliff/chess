@@ -203,7 +203,7 @@ public class GamePlayClient implements Client, ServerMessageObserver {
     }
 
     public void connectToWebsocket() {
-        ConnectCommand.Role role = currentGame.pointOfView() == ChessGame.TeamColor.WHITE ? ConnectCommand.Role.WHITE : ConnectCommand.Role.BLACK_PLAYER;
+        ConnectCommand.Role role = currentGame.pointOfView() == ChessGame.TeamColor.WHITE ? ConnectCommand.Role.WHITE : ConnectCommand.Role.BLACK;
         try {
             serverFacade.connect(this, currentGame.gameData().gameID(), role);
         } catch (Exception e) {

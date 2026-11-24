@@ -2,6 +2,7 @@ package service;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
@@ -71,13 +72,20 @@ public class GameplayService {
             GameData updatedGame = dataAccess.getGame(gameID);
 
             connectionManager.notifyAll(gameID, new LoadGameMessage(updatedGame));
-            connectionManager.notifyNonRoot(gameID, new NotificationMessage(username + " moved " + proposedMove.getStartPosition()
-                    + " to " + proposedMove.getEndPosition()), root);
+
+            connectionManager.notifyNonRoot(gameID, new NotificationMessage(username + " moved " + prettifyPosition(proposedMove.getStartPosition())
+                    + " to " + prettifyPosition(proposedMove.getEndPosition())), root);
             checkGameState(updatedGame);
         } catch (InvalidMoveException e) {
             var error = new ErrorMessage("Error: invalid move! Make sure it's your turn!");
             root.getRemote().sendString(new Gson().toJson(error));
         }
+    }
+
+    private String prettifyPosition(ChessPosition pos) {
+        char col = (char) ('a' + pos.getColumn() - 1);
+        char row = (char) ('0' + pos.getRow());
+        return ("" + col + row);
     }
 
     private void checkGameState(GameData updatedGame) throws IOException {
@@ -121,7 +129,18 @@ public class GameplayService {
         GameData oldGame = dataAccess.getGame(gameID);
         Connection connection = connectionManager.getConnection(gameID, root);
         ConnectCommand.Role role = connection.getRole();
-        if (role == ConnectCommand.Role.BLACK_PLAYER) {
+        //ghetto test version
+        if (role == null) {
+            if (oldGame.whiteUsername() != null && oldGame.whiteUsername().equals(username)) {
+                role = ConnectCommand.Role.WHITE;
+            } else if (oldGame.blackUsername() != null && oldGame.blackUsername().equals(username)) {
+                role = ConnectCommand.Role.BLACK;
+            } else {
+                role = ConnectCommand.Role.OBSERVER;
+            }
+        }
+
+        if (role == ConnectCommand.Role.BLACK) {
             GameData newGame = new GameData(gameID, oldGame.whiteUsername(), null, oldGame.gameName(), oldGame.game());
             dataAccess.updateGame(newGame);
         } else if (role == ConnectCommand.Role.WHITE) {
@@ -130,7 +149,6 @@ public class GameplayService {
         }
 
         removeConnection(root);
-        connectionManager.notifyRoot("You left the game", root);
 
         ServerMessage message = new NotificationMessage(username + " has left the game as " + role);
         connectionManager.notifyNonRoot(gameID, message, root);
