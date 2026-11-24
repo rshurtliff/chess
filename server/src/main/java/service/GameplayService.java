@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
@@ -36,16 +37,21 @@ public class GameplayService {
             case UserGameCommand.CommandType.MAKE_MOVE -> makeMove((MakeMoveCommand) command, session);
             case UserGameCommand.CommandType.CONNECT -> connect((ConnectCommand) command, session);
             case UserGameCommand.CommandType.LEAVE -> leave(command, session);
-            case UserGameCommand.CommandType.RESIGN -> resign(command);
+            case UserGameCommand.CommandType.RESIGN -> resign(command, session);
         }
         return new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION); // this will need to be changed to void function later
     }
 
     private void makeMove(MakeMoveCommand command, Session root) throws IOException, DataAccessException {
         //have this send the message back to the WebsocketCommunicator, not return it
+        String username = dataAccess.getAuth(command.getAuthToken()).username();
         try {
             int gameID = command.getGameID();
             GameData gameData = dataAccess.getGame(gameID);
+            if (gameData.game().getStatus() == ChessGame.Status.OVER) {
+                connectionManager.sendError("Error: Game is over. No moves can be made", root);
+                return;
+            }
             ChessMove proposedMove = command.getMove();
 
             var moveColor = gameData.game().getTeamTurn();
@@ -55,7 +61,7 @@ public class GameplayService {
             GameData updatedGame = dataAccess.getGame(gameID);
 
             connectionManager.notifyAll(gameID, new LoadGameMessage(updatedGame));
-            connectionManager.notifyNonRoot(gameID, new NotificationMessage(moveColor + " moved " + proposedMove.getStartPosition()
+            connectionManager.notifyNonRoot(gameID, new NotificationMessage(username + " moved " + proposedMove.getStartPosition()
                     + " to " + proposedMove.getEndPosition()), root);
             checkGameState(updatedGame);
         } catch (InvalidMoveException e) {
@@ -119,7 +125,12 @@ public class GameplayService {
         connectionManager.notifyNonRoot(gameID, message, root);
     }
 
-    private void resign(UserGameCommand command) {
+    private void resign(UserGameCommand command, Session session) throws DataAccessException, IOException {
+        String username = dataAccess.getAuth(command.getAuthToken()).username();
+        GameData game = dataAccess.getGame(command.getGameID());
+        game.game().endGame();
+        dataAccess.updateGame(game);
+        connectionManager.notifyAll(command.getGameID(), new NotificationMessage(username + " has resigned. Game over!"));
     }
 
     private UserGameCommand parseCommandFromJson(String json) {

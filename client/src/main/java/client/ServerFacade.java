@@ -181,6 +181,11 @@ public class ServerFacade {
         UserGameCommand leaveCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
         ws.send(new Gson().toJson(leaveCommand));
     }
+
+    public void resign(int gameID) throws Exception {
+        UserGameCommand resignCommand = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken,gameID);
+        ws.send(new Gson().toJson(resignCommand));
+    }
 }
 
 
