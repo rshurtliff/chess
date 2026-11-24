@@ -139,6 +139,14 @@ public class GameplayService {
     private void resign(UserGameCommand command, Session session) throws DataAccessException, IOException {
         String username = dataAccess.getAuth(command.getAuthToken()).username();
         GameData game = dataAccess.getGame(command.getGameID());
+        if (!(username.equals(game.whiteUsername()) || username.equals(game.blackUsername()))) {
+            connectionManager.sendError("You're not a player, you can't resign!", session);
+            return;
+        }
+        if (game.game().getStatus().equals(ChessGame.Status.OVER)) {
+            connectionManager.sendError("The game is already over!", session);
+            return;
+        }
         game.game().endGame();
         dataAccess.updateGame(game);
         connectionManager.notifyAll(command.getGameID(), new NotificationMessage(username + " has resigned. Game over!"));
